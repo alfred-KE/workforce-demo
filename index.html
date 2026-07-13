@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workforce Reinvention — Demo Suite</title>
+<style>
+  :root{
+    --navy:#0a2540; --navy2:#12345c; --bg:#f5f7fa; --card:#fff;
+    --border:#e3e9f0; --text:#1b2733; --muted:#5b6b7c;
+    --agentic:#7c3aed; --rpa:#0ea5e9; --gen:#f59e0b; --aug:#0d9488; --human:#475569;
+    --radius:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+
+  /* Hero */
+  .hero{
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff; padding:56px 0 48px;
+  }
+  .hero .wrap{position:relative}
+  .badge{
+    display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    color:#fff;font-size:12px;letter-spacing:.04em;text-transform:uppercase;
+    padding:5px 11px;border-radius:999px;margin-bottom:18px;
+  }
+  .hero h1{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0 0 14px;font-weight:700}
+  .hero p.lead{font-size:clamp(15px,2vw,18px);max-width:680px;margin:0 0 26px;color:#dbe6f2}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:8px}
+  .legend .item{display:flex;align-items:center;gap:8px;font-size:13px;color:#eaf1f8}
+  .legend .dot{width:12px;height:12px;border-radius:4px;display:inline-block;flex:0 0 auto}
+
+  /* Cards */
+  .section{padding:44px 0}
+  .section h2{font-size:20px;margin:0 0 20px;font-weight:600;color:var(--navy)}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:24px;display:flex;flex-direction:column;transition:box-shadow .15s,transform .15s;
+  }
+  .card:hover{box-shadow:0 8px 26px rgba(10,37,64,.10);transform:translateY(-2px)}
+  .card .tag{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .card h3{margin:0 0 8px;font-size:18px;color:var(--navy)}
+  .card p{margin:0 0 20px;color:var(--muted);font-size:14px;flex:1}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+    background:var(--navy);color:#fff;text-decoration:none;font-size:14px;font-weight:500;
+    padding:10px 18px;border-radius:999px;transition:background .15s;
+  }
+  .btn:hover{background:var(--navy2)}
+
+  /* How to read */
+  .read{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px}
+  .read h2{margin-top:0}
+  .read dl{display:grid;grid-template-columns:170px 1fr;gap:10px 20px;margin:0}
+  .read dt{font-weight:600;color:var(--navy);font-size:14px}
+  .read dd{margin:0;color:var(--muted);font-size:14px}
+  .disclaimer{
+    margin-top:22px;padding:14px 16px;border-left:3px solid var(--gen);
+    background:#fffaf0;border-radius:6px;font-size:13px;color:#7a5a12;
+  }
+  .disclaimer b{color:#8a4b00}
+
+  footer{padding:30px 0 50px;color:var(--muted);font-size:12px;text-align:center}
+
+  @media (max-width:720px){
+    .cards{grid-template-columns:1fr}
+    .read dl{grid-template-columns:1fr}
+    .read dt{margin-top:8px}
+  }
+  @media print{
+    .hero{background:none;color:#000;border-bottom:2px solid #000}
+    .badge,.btn{display:none}
+    .card:hover{box-shadow:none;transform:none}
+  }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">Demo — illustrative data</span>
+      <h1>Workforce Reinvention — Demo Suite</h1>
+      <p class="lead">A task-level view of where AI and automation reshape core HR processes,
+      using a five-workforce model. Explore the diagnostic dashboard and the interactive
+      process maps below. All figures are synthetic and directional.</p>
+      <div class="legend">
+        <span class="item"><span class="dot" style="background:var(--agentic)"></span>Agentic AI — autonomous orchestration</span>
+        <span class="item"><span class="dot" style="background:var(--rpa)"></span>RPA / Automation — rules-based</span>
+        <span class="item"><span class="dot" style="background:var(--gen)"></span>Generative AI — drafting &amp; content</span>
+        <span class="item"><span class="dot" style="background:var(--aug)"></span>Augmented Human — human + AI copilot</span>
+        <span class="item"><span class="dot" style="background:var(--human)"></span>Human — trust, judgement, ethics</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="wrap">
+        <h2>The two tools</h2>
+        <div class="cards">
+          <div class="card">
+            <span class="tag">Diagnostic</span>
+            <h3>Workforce Navigator — Dashboard</h3>
+            <p>A synthesis view: every task across four HR processes reallocated to its best-fit
+            workforce, with automation potential, a directional effort-freed range, and the
+            keep / build / retire skills shift.</p>
+            <a class="btn" href="workforce-navigator-dashboard.html">Open demo →</a>
+          </div>
+          <div class="card">
+            <span class="tag">Interactive maps</span>
+            <h3>Process Improvement Explorer</h3>
+            <p>Original-style process maps with an AI/automation improvement layer. Toggle
+            current vs. improved, see which steps automate, which stay human, and which control
+            gaps close — as a map, list, priority matrix or per-role view.</p>
+            <a class="btn" href="process-improvement-explorer.html">Open demo →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="padding-top:0">
+      <div class="wrap">
+        <div class="read">
+          <h2>How to read it</h2>
+          <dl>
+            <dt>Automation potential</dt>
+            <dd>The estimated share of a task's effort that shifts off a human with today's
+            technology. It is a technical ceiling, not a headcount saving.</dd>
+            <dt>Five workforces</dt>
+            <dd>Each task is assigned to the one force best suited to do it: Agentic AI, RPA,
+            Generative AI, Augmented Human, or Human.</dd>
+            <dt>Waves (H1 / H2)</dt>
+            <dd>Sequencing of the roadmap. H1 = quick wins (low effort, or medium effort with
+            high value). H2 = higher-effort or integration-heavy work that follows.</dd>
+            <dt>Control gaps</dt>
+            <dd>Steps where a risk exists today with no control in place. The improvement layer
+            shows how automation can close them.</dd>
+          </dl>
+          <div class="disclaimer">
+            <b>DIRECTIONAL.</b> All data in this suite is synthetic and illustrative.
+            The figures are estimates to frame a conversation — not a validated headcount
+            business case. Turning them into euros and FTE requires real task volumes,
+            cycle times, headcount by role and the current tech stack.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">Workforce Reinvention — Demo Suite · Synthetic demonstration · No real company, person or system data.</div>
+  </footer>
+</body>
+</html>
