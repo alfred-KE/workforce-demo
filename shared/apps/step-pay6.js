@@ -35,12 +35,12 @@ export function render(mount, ctx) {
     const actual = ctx.tool.inputs.find((i) => i.id === "actual")?.demo || "Payroll run data for the period.";
     try {
       const d = await callTool(ctx.step.id, { source, actual },
-        "You are a payroll control agent. For EACH control in the source list, output exactly one line: '<control> — PASS' or '<control> — FAIL: <short reason>'. Base failures on the actual run data if it suggests issues, otherwise PASS. End with 'Result: PASS' or 'Result: FAIL'.");
+        "You are a payroll control agent. For EACH control in the source list, output exactly one line in this format: '<control>: PASS' or '<control>: FAIL - <short reason>'. Use the literal words PASS or FAIL (no symbols, no bullets). Base failures on the actual run data if it suggests issues, otherwise PASS. End with 'Result: PASS' or 'Result: FAIL'.");
       report = d.output;
       let ok = 0, bad = 0;
       controls.forEach((c) => {
         const line = d.output.split("\n").find((l) => l.toLowerCase().includes(c.toLowerCase().slice(0, 8)));
-        const failed = line && /fail/i.test(line);
+        const failed = line && (/\bfail/i.test(line) || /[✗✘]/.test(line));
         if (failed) bad++; else ok++;
         grid.append(el("div", { class: "minicard", style: { borderLeft: "4px solid " + (failed ? "#dc2626" : "#16a34a") } },
           el("div", { style: { fontSize: "12.5px", fontWeight: "700" } }, c),

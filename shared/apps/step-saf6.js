@@ -47,7 +47,7 @@ export function render(mount, ctx) {
   async function run() {
     runBtn.disabled = true; runBtn.innerHTML = spinner() + " Planning…"; planBody.innerHTML = "";
     empty.style.display = "none";
-    const extra = `Participants: ${people.value}. Courses: ${[...sel].join(", ")}. Spread across ${weeks.value} weeks, weekdays Mon-Fri. For each session output a line like 'Week 2 · Wed · Forklift · 6 people · Room B'. Then a short notes paragraph on conflicts/capacity.`;
+    const extra = `Participants: ${people.value}. Courses: ${[...sel].join(", ")}. Spread across ${weeks.value} weeks, weekdays Mon-Fri. Output ONE line per session, no headings, no nesting, in this EXACT format: 'Week <n> · <Day> · <course> · <n> people · <room>' where Day is a 3-letter weekday (Mon/Tue/Wed/Thu/Fri). After all sessions, one line starting 'Notes:' covering conflicts/capacity.`;
     try { const d = await callTool(ctx.step.id, { constraints: cons.value }, extra); raw = d.output; grid(parseInt(weeks.value, 10) || 4, d.output); planBody.innerHTML = mdToHtml(d.output); }
     catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = "Build schedule"; }
   }
