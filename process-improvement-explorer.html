@@ -52,6 +52,15 @@
   .diagram-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden}
   .scroll{overflow-x:auto;overflow-y:hidden}
   .canvas{position:relative}
+  .diagram-flex{display:flex;align-items:stretch}
+  .rail{flex:0 0 auto;position:relative;background:#f0f4f9;border-right:1px solid var(--line);z-index:4}
+  .rail-cell{position:absolute;left:0;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
+  .rail-cell span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+  .zoombar{display:flex;gap:6px;align-items:center;margin-bottom:10px}
+  .zbtn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;font-weight:800;cursor:pointer;font-size:14px;color:var(--muted);line-height:1}
+  .zbtn:hover{border-color:#c3d0de}
+  .zbtn.fit{font-size:12px}
+  #zoomLbl{font-size:12px;font-weight:700;color:var(--muted);min-width:46px;text-align:center}
   .lane{position:absolute;left:0;border-bottom:1px solid var(--line)}
   .lane.alt{background:#fbfcfe}
   .lanelabel{position:absolute;left:0;top:0;bottom:0;width:30px;background:#f0f4f9;border-right:1px solid var(--line);
@@ -138,7 +147,7 @@
   .errbox.on{display:block}
   .demo-note{font-size:11px;color:var(--muted);margin-top:10px}
   @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.dr-grid{grid-template-columns:repeat(2,1fr)}}
-  @media print{.tabs,.controls,.toolbtn,.overlay{display:none!important}.diagram-card{overflow:visible}.scroll{overflow:visible}}
+  @media print{.tabs,.controls,.zoombar,.toolbtn,.overlay{display:none!important}.diagram-card{overflow:visible}.scroll{overflow:visible}}
 </style>
 </head>
 <body>
@@ -166,8 +175,18 @@
 
   <div class="kpis" id="kpis"></div>
 
+  <div class="zoombar">
+    <span class="hint" style="margin-right:4px">Adjust view</span>
+    <button class="zbtn" id="zoomOut" title="Zoom out">−</button>
+    <span id="zoomLbl">100%</span>
+    <button class="zbtn" id="zoomIn" title="Zoom in">+</button>
+    <button class="zbtn fit" id="zoomFit">Fit width</button>
+  </div>
   <div class="diagram-card">
-    <div class="scroll"><div class="canvas" id="canvas"></div></div>
+    <div class="diagram-flex">
+      <div class="rail" id="rail"></div>
+      <div class="scroll"><div class="canvas" id="canvas"></div></div>
+    </div>
   </div>
 
   <div class="drawer empty" id="drawer">Select a step to see its improvement, skills shift, control impact — and open its AI tool.</div>
@@ -212,10 +231,10 @@ const wfLabel = (k) => (WF[k]&&WF[k].label)||k;
 
 let proc = "req", mode = "current", sel = null;
 
-const labelW=30, colW=196, nodeW=162, nodeH=66, laneH=132, topPad=10, startGap=74;
-const col0X=labelW+18+startGap;
-const nodeX=(c)=>col0X+c*colW;
-const nodeY=(l)=>topPad+l*laneH+(laneH-nodeH)/2;
+const BASE={colW:196,nodeW:162,nodeH:66,laneH:132,topPad:12,startGap:70,padL:16,railW:34,nameF:11,sysF:9.5};
+let zoom=1, L=Object.assign({},BASE);
+const nodeX=(c)=>L.padL+L.startGap+c*L.colW;
+const nodeY=(l)=>L.topPad+l*L.laneH+(L.laneH-L.nodeH)/2;
 
 function procSteps(p){ return STEPS.filter(s=>s.process===p).sort((a,b)=>a.col-b.col); }
 
@@ -241,17 +260,31 @@ function buildLegend(){
 function build(){
   document.getElementById("ptitle").textContent=PROCS[proc].name;
   const lanes=PROCS[proc].lanes, steps=procSteps(proc);
+  // scaled layout from the zoom factor (topPad & railW stay fixed)
+  L={colW:BASE.colW*zoom, nodeW:BASE.nodeW*zoom, nodeH:BASE.nodeH*zoom, laneH:BASE.laneH*zoom,
+     topPad:BASE.topPad, startGap:BASE.startGap*zoom, padL:BASE.padL*zoom, railW:BASE.railW,
+     nameF:BASE.nameF*zoom, sysF:BASE.sysF*zoom};
   const maxCol=Math.max(...steps.map(s=>s.col));
-  const ex=nodeX(maxCol)+nodeW+40;
-  const totalW=ex+160, totalH=topPad+lanes.length*laneH+22;
+  const ex=nodeX(maxCol)+L.nodeW+40*zoom;
+  const totalW=ex+80*zoom, totalH=L.topPad+lanes.length*L.laneH+20;
+  const zl=document.getElementById("zoomLbl"); if(zl) zl.textContent=Math.round(zoom*100)+"%";
+
+  // frozen actor rail (outside the horizontal scroll — always visible)
+  const rail=document.getElementById("rail");
+  rail.innerHTML=""; rail.style.width=L.railW+"px"; rail.style.height=totalH+"px";
+  lanes.forEach((name,i)=>{
+    const cell=document.createElement("div"); cell.className="rail-cell";
+    cell.style.top=(L.topPad+i*L.laneH)+"px"; cell.style.height=L.laneH+"px"; cell.style.width=L.railW+"px";
+    cell.innerHTML=`<span>${esc(name)}</span>`;
+    rail.appendChild(cell);
+  });
+
   const cv=document.getElementById("canvas");
   cv.innerHTML=""; cv.style.width=totalW+"px"; cv.style.height=totalH+"px";
-
-  lanes.forEach((L,i)=>{
+  lanes.forEach((name,i)=>{
     const ln=document.createElement("div");
     ln.className="lane"+(i%2?" alt":"");
-    ln.style.top=(topPad+i*laneH)+"px"; ln.style.height=laneH+"px"; ln.style.width=totalW+"px";
-    ln.innerHTML=`<div class="lanelabel"><span>${esc(L)}</span></div>`;
+    ln.style.top=(L.topPad+i*L.laneH)+"px"; ln.style.height=L.laneH+"px"; ln.style.width=totalW+"px";
     cv.appendChild(ln);
   });
 
@@ -262,29 +295,36 @@ function build(){
   cv.appendChild(svg);
 
   const first=steps[0], last=steps[steps.length-1];
-  addEvent(cv, labelW+20, nodeY(first.lane)+nodeH/2-16, "Start", false);
-  addEvent(cv, ex, nodeY(last.lane)+nodeH/2-16, "End", true);
+  addEvent(cv, L.padL+8, nodeY(first.lane)+L.nodeH/2-16, "Start", false);
+  addEvent(cv, ex, nodeY(last.lane)+L.nodeH/2-16, "End", true);
 
-  drawConn(svg, labelW+20+32, nodeY(first.lane)+nodeH/2, nodeX(first.col), nodeY(first.lane)+nodeH/2);
+  drawConn(svg, L.padL+40, nodeY(first.lane)+L.nodeH/2, nodeX(first.col), nodeY(first.lane)+L.nodeH/2);
   for(let i=0;i<steps.length-1;i++){
     const a=steps[i], b=steps[i+1];
-    drawConn(svg, nodeX(a.col)+nodeW, nodeY(a.lane)+nodeH/2, nodeX(b.col), nodeY(b.lane)+nodeH/2);
+    drawConn(svg, nodeX(a.col)+L.nodeW, nodeY(a.lane)+L.nodeH/2, nodeX(b.col), nodeY(b.lane)+L.nodeH/2);
   }
-  drawConn(svg, nodeX(last.col)+nodeW, nodeY(last.lane)+nodeH/2, ex-2, nodeY(last.lane)+nodeH/2);
+  drawConn(svg, nodeX(last.col)+L.nodeW, nodeY(last.lane)+L.nodeH/2, ex-2, nodeY(last.lane)+L.nodeH/2);
 
   steps.forEach(s=>{
     const d=document.createElement("div");
     d.className="node"; d.dataset.id=s.id;
     d.style.left=nodeX(s.col)+"px"; d.style.top=nodeY(s.lane)+"px";
-    d.style.width=nodeW+"px"; d.style.minHeight=nodeH+"px";
+    d.style.width=L.nodeW+"px"; d.style.minHeight=L.nodeH+"px";
     d.title=s.name+" — "+s.role;
     const timer=s.timer?` <span style="color:#8a5a00">⏱ ${esc(s.timer)}</span>`:"";
-    d.innerHTML=`<div class="nn">${esc(s.name)}</div><div class="nsys">${esc(s.sys)}${timer}</div>
+    d.innerHTML=`<div class="nn" style="font-size:${L.nameF}px">${esc(s.name)}</div><div class="nsys" style="font-size:${L.sysF}px">${esc(s.sys)}${timer}</div>
       <div class="corner"></div><div class="apbadge"></div><div class="autotag">★ AUTO</div><div class="toolmark">▸</div>`;
     d.onclick=()=>selectNode(s.id);
     cv.appendChild(d);
   });
   applyMode();
+}
+function setZoom(z){ zoom=Math.max(0.6, Math.min(1.7, Math.round(z*100)/100)); build(); if(sel) selectNode(sel); }
+function fitWidth(){
+  const sc=document.querySelector(".scroll"); if(!sc) return;
+  const steps=procSteps(proc); const cols=Math.max(...steps.map(s=>s.col));
+  const w1=BASE.padL+BASE.startGap+cols*BASE.colW+BASE.nodeW+40+80; // totalW at zoom=1
+  setZoom((sc.clientWidth-6)/w1);
 }
 function addEvent(cv,x,y,label,end){
   const e=document.createElement("div"); e.className="event"; e.style.left=x+"px"; e.style.top=y+"px";
@@ -483,6 +523,9 @@ document.getElementById("mReset").onclick=()=>{ if(curTool){ fillFields(curTool)
 document.getElementById("overlay").onclick=(e)=>{ if(e.target.id==="overlay") closeModal(); };
 document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
 
+document.getElementById("zoomIn").onclick=()=>setZoom(zoom+0.15);
+document.getElementById("zoomOut").onclick=()=>setZoom(zoom-0.15);
+document.getElementById("zoomFit").onclick=fitWidth;
 buildTabs(); buildLegend(); build();
 </script>
 </body>
