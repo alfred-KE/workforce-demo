@@ -89,6 +89,11 @@
   .event .lbl{font-size:9.5px;color:var(--muted);font-weight:700;text-align:center;max-width:104px;line-height:1.2}
   /* drawer */
   .drawer{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px;min-height:120px}
+  .explorer-main{display:flex;gap:16px;align-items:flex-start}
+  .explorer-main .diagram-card{flex:1 1 auto;min-width:0}
+  .explorer-main .drawer{flex:0 0 380px;margin-top:0;position:sticky;top:14px;max-height:calc(100vh - 32px);overflow:auto}
+  .explorer-main .drawer .dr-grid{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:960px){.explorer-main{flex-direction:column}.explorer-main .drawer{flex:1 1 auto;width:100%;position:static;max-height:none;margin-top:16px}}
   .drawer.empty{color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px}
   .dr-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
   .dr-title{font-size:16px;font-weight:800;color:var(--navy)}
@@ -182,16 +187,17 @@
     <button class="zbtn" id="zoomIn" title="Zoom in">+</button>
     <button class="zbtn fit" id="zoomFit">Fit width</button>
   </div>
-  <div class="diagram-card">
-    <div class="scroll">
-      <div class="diagram-flex">
-        <div class="rail" id="rail"></div>
-        <div class="canvas" id="canvas"></div>
+  <div class="explorer-main">
+    <div class="diagram-card">
+      <div class="scroll">
+        <div class="diagram-flex">
+          <div class="rail" id="rail"></div>
+          <div class="canvas" id="canvas"></div>
+        </div>
       </div>
     </div>
+    <div class="drawer empty" id="drawer">Select a step to see its improvement, skills shift, control impact — and open its AI tool.</div>
   </div>
-
-  <div class="drawer empty" id="drawer">Select a step to see its improvement, skills shift, control impact — and open its AI tool.</div>
 
   <div class="foot">
     <p><span class="pill">DIRECTIONAL</span> &nbsp;Automation potential = estimated share of a step's effort that shifts off a human with today's technology. Figures are illustrative estimates from the process map; to convert into € / FTE we need headcount, task volumes &amp; cycle times and the tech stack. Each step's tool runs live on synthetic demo data. Prepared by NovelVision.</p>
