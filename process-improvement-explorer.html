@@ -50,10 +50,10 @@
   .kpi .delta{font-size:11px;font-weight:700;margin-top:5px}
   /* diagram */
   .diagram-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden}
-  .scroll{overflow-x:auto;overflow-y:hidden}
-  .canvas{position:relative}
-  .diagram-flex{display:flex;align-items:stretch}
-  .rail{flex:0 0 auto;position:relative;background:#f0f4f9;border-right:1px solid var(--line);z-index:4}
+  .scroll{overflow:auto;max-height:74vh;overscroll-behavior:contain}
+  .canvas{position:relative;flex:0 0 auto}
+  .diagram-flex{display:flex;align-items:flex-start;width:max-content}
+  .rail{flex:0 0 auto;position:sticky;left:0;background:#f0f4f9;border-right:1px solid var(--line);z-index:6}
   .rail-cell{position:absolute;left:0;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--line)}
   .rail-cell span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
   .zoombar{display:flex;gap:6px;align-items:center;margin-bottom:10px}
@@ -183,9 +183,11 @@
     <button class="zbtn fit" id="zoomFit">Fit width</button>
   </div>
   <div class="diagram-card">
-    <div class="diagram-flex">
-      <div class="rail" id="rail"></div>
-      <div class="scroll"><div class="canvas" id="canvas"></div></div>
+    <div class="scroll">
+      <div class="diagram-flex">
+        <div class="rail" id="rail"></div>
+        <div class="canvas" id="canvas"></div>
+      </div>
     </div>
   </div>
 
@@ -526,6 +528,14 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); })
 document.getElementById("zoomIn").onclick=()=>setZoom(zoom+0.15);
 document.getElementById("zoomOut").onclick=()=>setZoom(zoom-0.15);
 document.getElementById("zoomFit").onclick=fitWidth;
+// ctrl+scroll / trackpad pinch to zoom the diagram
+let wheelPending=false;
+document.querySelector(".scroll").addEventListener("wheel",(e)=>{
+  if(!e.ctrlKey) return;            // normal scroll passes through (both axes)
+  e.preventDefault();
+  if(wheelPending) return; wheelPending=true; requestAnimationFrame(()=>{wheelPending=false;});
+  setZoom(zoom - Math.sign(e.deltaY)*0.08);
+},{passive:false});
 buildTabs(); buildLegend(); build();
 </script>
 </body>
