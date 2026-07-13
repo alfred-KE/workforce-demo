@@ -161,12 +161,16 @@ if (!step) {
     document.getElementById("kind").textContent = tool.kindLabel;
     document.getElementById("intro").textContent = tool.blurb;
     const ctx = { step, tool, PROCS, WF };
+    // load a bespoke per-step app if one exists, else the kind app, else generic
+    let mod = null;
+    for (const path of [`./shared/apps/step-${id}.js`, `./shared/apps/${tool.kind}.js`]) {
+      try { const m = await import(path); if (m && typeof m.render === "function") { mod = m; break; } } catch (_) {}
+    }
     try {
-      const mod = await import(`./shared/apps/${tool.kind}.js`);
-      if (mod && typeof mod.render === "function") mod.render(mount, ctx);
+      if (mod) mod.render(mount, ctx);
       else generic(mount, ctx);
     } catch (e) {
-      console.error("app load failed", e);
+      console.error("app render failed", e);
       generic(mount, ctx);
     }
     // auto-play hooks (used by the showcase player)
