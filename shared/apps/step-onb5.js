@@ -1,5 +1,5 @@
 // Contract Pack — assemble an employment contract + annexes from offer terms (step onb5).
-import { el, callTool, mdToHtml, copyText, downloadText, toast, spinner } from "./_common.js";
+import { el, callTool, mdToHtml, copyText, downloadText, toast, spinner, esc } from "./_common.js";
 
 export function render(mount, ctx) {
   const t = { name: "Milan Bakker", role: "Store Associate", location: "Store 118 — Rotterdam", start: "2026-07-01", contract: "Permanent", hours: "30h / week", salary: "Band L2 (as per pay policy)", probation: "6 months" };
@@ -29,7 +29,26 @@ export function render(mount, ctx) {
   const toolbar = el("div", { class: "toolbar" }, el("h3", { style: { margin: 0 } }, "Contract pack"), el("span", { class: "grow" }),
     el("button", { class: "btn small", onClick: () => copyText(docs[active] || "") }, "Copy"),
     el("button", { class: "btn small", onClick: () => downloadText(active + ".txt", docs[active] || "") }, "Download"),
+    el("button", { class: "btn small", onClick: printPack }, "Print / PDF"),
     el("button", { class: "btn small primary", onClick: () => toast("Sent to " + t.name + " for e-signature (demo)") }, "Send for e-signature"));
+
+  function printPack() {
+    const got = [["Employment contract", docs.contract], ["Role profile annex", docs.role], ["Policy summary annex", docs.policy]].filter((x) => x[1]);
+    if (!got.length) return toast("Generate the pack first");
+    const w = window.open("", "_blank");
+    if (!w) return toast("Allow pop-ups to print / save as PDF");
+    const body = got.map(([h, md]) => `<h2>${esc(h)}</h2>` + mdToHtml(md)).join('<div style="page-break-after:always"></div>');
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Employment Pack — ${esc(t.name)}</title>
+      <style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1b2733;max-width:720px;margin:26px auto;padding:0 22px;line-height:1.55}
+      h1{font-size:20px;color:#0a2540} h2{font-size:16px;color:#0a2540;border-bottom:1px solid #e3e9f0;padding-bottom:5px;margin-top:26px}
+      h4{margin:12px 0 4px} table{border-collapse:collapse;width:100%} th,td{border:1px solid #d7dee7;padding:5px 9px;text-align:left} th{background:#f0f4f9}
+      .meta{color:#5b6b7b;font-size:13px;margin-bottom:8px}</style></head>
+      <body><h1>Northwind Retail — Employment Pack</h1>
+      <div class="meta"><b>Employee:</b> ${esc(t.name)} &nbsp;·&nbsp; <b>Role:</b> ${esc(t.role)} &nbsp;·&nbsp; <b>Start:</b> ${esc(t.start)}</div>
+      ${body}
+      <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>`);
+    w.document.close();
+  }
   const right = el("div", { class: "pane" }, toolbar, checklist, tabs, empty, view);
 
   function drawChecklist() {
