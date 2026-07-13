@@ -98,18 +98,19 @@ export const KINDS = {
   },
 };
 
-/* ---------- which kind each step maps to (keyword-first, then workforce) ---------- */
+/* ---------- which kind each step maps to (name-based rules, then workforce) ----------
+   Rules read the step NAME only (the improvement text adds noise like "posting"/"check"). */
 export function kindFor(s) {
   if (s.wf === "Human") return "human";
-  const t = (s.name + " " + (s.imp || "")).toLowerCase();
+  const t = s.name.toLowerCase();
   if (/transl/.test(t)) return "translate";
-  if (/duplicate|rehire|match|eligib|country|classif|\broute\b/.test(t)) return "classify";
-  if (/\bcheck\b|verif|control|posted|posting|payroll control|validate mutations/.test(t)) return "qa";
-  if (/schedul|intake meeting|plan (medical|introductory|general)|preliminary planning|calendar/.test(t)) return "schedule";
-  if (/inform|notify|\bshare\b|send email|stakeholders|announce|send .*review/.test(t)) return "notify";
-  if (/register error|resolve error|\bextract\b|\bexport\b|review new-hire|which employees|overview|employee query|complete .*checklist/.test(t)) return "extract";
-  if (/process feedback|\bcorrect\b/.test(t)) return "refine";
-  if (/draft|vacancy text|generate contract|learning plan|one[- ]?pager|create .*text/.test(t)) return "draft";
+  if (/generate contract|contract summary|create vacancy|vacancy advert|create .*text|\bdraft\b|learning plan|one[- ]?pager/.test(t)) return "draft";
+  if (/process feedback|merge feedback|correct data/.test(t)) return "refine";
+  if (/duplicate|rehire|\bmatch\b|eligib|country/.test(t)) return "classify";
+  if (/register error|\bextract\b|\bexport\b|employee query|which employees|new[- ]hire data|expiring|overview|complete .*checklist|validate mutations/.test(t)) return "extract";
+  if (/schedul|intake meeting|plan (medical|introductory|general|vacancy)|preliminary planning|plan .*training/.test(t)) return "schedule";
+  if (/\bcheck\b|verif|control|posted|posting/.test(t)) return "qa";
+  if (/\bsend\b|inform|notify|\bshare\b|announce|stakeholders|\bemail\b/.test(t)) return "notify";
   if (s.wf === "Gen") return "draft";
   if (s.wf === "Aug") return "refine";
   if (s.wf === "Agentic") return "orchestrate";
@@ -199,11 +200,15 @@ export function deriveTool(s) {
   const kind = kindFor(s);
   if (kind === "human") return null;
   const k = KINDS[kind];
-  const demo = DEMOS[s.id] || genericDemo(kind, s);
+  const bespoke = DEMOS[s.id] || {};
+  const gd = genericDemo(kind, s); // guarantees a sensible demo for every input id
   return {
     id: s.id, kind, title: s.name, kindLabel: k.label, blurb: k.blurb, run: k.run,
     model: k.model, maxTokens: k.maxTokens,
-    inputs: k.inputs.map((inp) => ({ ...inp, demo: (demo && demo[inp.id]) || "" })),
+    inputs: k.inputs.map((inp) => ({
+      ...inp,
+      demo: bespoke[inp.id] != null && bespoke[inp.id] !== "" ? bespoke[inp.id] : (gd[inp.id] || ""),
+    })),
   };
 }
 

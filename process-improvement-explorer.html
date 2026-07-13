@@ -1,715 +1,489 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Process Improvement Explorer — Northwind Retail</title>
 <style>
   :root{
-    --navy:#0a2540; --navy2:#12345c; --bg:#f5f7fa; --card:#fff; --border:#e3e9f0; --ink:#1b2733;
-    --muted:#5b6b7c;
-    --wf-agentic:#7c3aed; --wf-rpa:#0ea5e9; --wf-gen:#f59e0b; --wf-aug:#0d9488; --wf-human:#475569;
-    --ap-hi:#16a34a; --ap-mid:#f59e0b; --ap-lo:#94a3b8;
-    --gap:#dc2626; --closed:#16a34a;
+    --navy:#0a2540; --navy2:#12345c; --ink:#1b2733; --muted:#5b6b7b;
+    --line:#e3e9f0; --bg:#f5f7fa; --card:#ffffff;
+    --agentic:#7c3aed; --rpa:#0ea5e9; --gen:#f59e0b; --aug:#0d9488; --human:#475569;
+    --hi:#16a34a; --med:#f59e0b; --lo:#94a3b8; --risk:#dc2626;
+    --bpmn:#fdf6d8; --bpmnb:#d9c96a;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
-  header.top{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:20px 26px}
-  header.top h1{margin:0;font-size:20px;font-weight:600;letter-spacing:.2px}
-  header.top p{margin:6px 0 0;font-size:13px;color:#c7d6e6;max-width:820px}
-  .demo-badge{display:inline-block;margin-left:10px;background:#f59e0b;color:#3a2600;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;vertical-align:middle}
-  .wrap{max-width:1500px;margin:0 auto;padding:18px 22px 60px}
-
-  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:14px 0}
-  .seg{display:inline-flex;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  .seg button{border:0;background:transparent;padding:8px 14px;font-size:13px;cursor:pointer;color:var(--muted);font-weight:500}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5;font-size:14px}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 22px 60px}
+  header.top{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:24px 0 20px;margin-bottom:20px}
+  header.top .wrap{padding:0 22px}
+  .brandrow{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.06em;font-size:12px;opacity:.85;flex-wrap:wrap}
+  .brandrow .chev{color:#4da3ff}
+  .badge{display:inline-block;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);
+    color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+  h1{font-size:22px;margin:10px 0 4px;font-weight:800;letter-spacing:-.01em}
+  .sub{opacity:.82;font-size:13px;max-width:960px}
+  /* tabs */
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 2px}
+  .tabs button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#dbe6f2;padding:9px 15px;border-radius:9px;
+    font-weight:700;font-size:13px;cursor:pointer;transition:.15s}
+  .tabs button.active{background:#fff;color:var(--navy);border-color:#fff}
+  .tabs button:hover:not(.active){background:rgba(255,255,255,.14)}
+  /* controls */
+  .controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin:14px 0 16px}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:4px;gap:4px}
+  .seg button{border:none;background:transparent;padding:9px 16px;border-radius:7px;font-weight:700;font-size:13px;
+    cursor:pointer;color:var(--muted);transition:.15s}
   .seg button.active{background:var(--navy);color:#fff}
-  .seg.mode button.active{background:var(--wf-agentic)}
-  .procTabs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px}
-  .procTabs button{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--muted)}
-  .procTabs button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
-  .spacer{flex:1}
-  .btn{border:1px solid var(--border);background:var(--card);border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
-  .btn:hover{border-color:var(--navy)}
-  .zoom{display:inline-flex;align-items:center;gap:6px}
-  .zoom button{width:30px;height:30px;border:1px solid var(--border);background:var(--card);border-radius:7px;cursor:pointer;font-size:16px;line-height:1}
-
+  .seg button.active.imp{background:var(--agentic)}
+  .hint{font-size:12px;color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:11.5px;color:var(--muted)}
+  .legend .grp{display:flex;gap:6px;align-items:center}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
   /* KPI */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 16px}
-  .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-  .kpi .v{font-size:24px;font-weight:600;color:var(--navy)}
-  .kpi .l{font-size:12px;color:var(--muted);margin-top:3px}
-
-  /* legend */
-  .legend{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:18px;align-items:center}
-  .legend .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .legend .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-right:2px}
-  .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;background:#fff;user-select:none}
-  .chip .dot{width:11px;height:11px;border-radius:50%}
-  .chip.off{opacity:.34}
-  .chip.wave{font-weight:600;color:var(--navy)}
-  .keyitem{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
-  .keyitem .star{color:var(--ap-hi);font-weight:700}
-  .ring-red{width:12px;height:12px;border-radius:50%;border:2px solid var(--gap);display:inline-block}
-  .ring-grn{width:12px;height:12px;border-radius:50%;border:2px solid var(--closed);display:inline-block}
-
-  /* view host */
-  .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0;overflow:hidden}
-  .view{display:none}
-  .view.active{display:block}
-
-  /* MAP */
-  .mapScroll{overflow:auto;padding:16px;max-height:72vh}
-  .stageWrap{transform-origin:top left}
-  .stage{position:relative}
-  .lane-band{position:absolute;left:0;right:0;border-bottom:1px dashed var(--border)}
-  .lane-band:nth-child(even){background:#fafcfe}
-  .lane-label{position:absolute;left:0;top:0;width:150px;height:100%;display:flex;align-items:center;padding:0 12px;font-size:12px;font-weight:600;color:var(--navy);background:#eef3f9;border-right:1px solid var(--border);writing-mode:horizontal-tb}
-  svg.wires{position:absolute;left:0;top:0;pointer-events:none}
-  .node{position:absolute;background:#fffdf5;border:1px solid #d9c98f;border-radius:9px;padding:7px 9px;font-size:11px;line-height:1.25;color:var(--ink);cursor:pointer;box-shadow:0 1px 2px rgba(10,37,64,.06)}
-  .node:hover{border-color:var(--navy)}
-  .node .nm{font-weight:600;display:block}
-  .node .sy{color:var(--muted);font-size:10px}
-  .node.dim{opacity:.22}
-  .node .timer{position:absolute;top:-9px;left:-9px;width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid var(--navy);font-size:9px;display:flex;align-items:center;justify-content:center}
-  .node .timer span{font-size:7px;font-weight:700}
-  .gw{position:absolute;width:34px;height:34px;background:#fff8e6;border:1px solid #d9c98f;transform:rotate(45deg);cursor:pointer}
-  .gw.dim{opacity:.22}
-  .gw-cap{position:absolute;font-size:10px;color:var(--muted);text-align:center;pointer-events:none}
-  .evt{position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid var(--navy)}
-  .evt.end{border-width:3px}
-  .marker{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:5}
-  .marker .dot{width:15px;height:15px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
-  .marker.gapmark .dot{box-shadow:0 0 0 3px var(--gap)}
-  .marker.pill{transform:translate(-50%,-115%)}
-  .marker .pillbox{display:inline-flex;align-items:center;gap:3px;color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap;box-shadow:0 1px 3px rgba(10,37,64,.25)}
-  .marker.pill.closed .pillbox{box-shadow:0 0 0 2px var(--closed),0 1px 3px rgba(10,37,64,.25)}
-  .marker.dim{opacity:.2}
-
-  /* LIST */
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  thead th{position:sticky;top:0;background:#f0f4f9;text-align:left;padding:10px 12px;font-size:12px;color:var(--navy);cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--border)}
-  thead th .arr{color:var(--muted);font-size:10px}
-  tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-  tbody tr{cursor:pointer}
-  tbody tr:hover{background:#f7fafd}
-  tbody tr.dim{opacity:.3}
-  .listScroll{max-height:72vh;overflow:auto}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;color:#fff}
-  .apbar{display:inline-flex;align-items:center;gap:7px}
-  .apbar .track{width:70px;height:7px;border-radius:4px;background:#e9eef4;overflow:hidden}
-  .apbar .fill{height:100%;border-radius:4px}
-  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;background:#eef2f7;color:var(--muted)}
-  .tag.hi{background:#e7f6ec;color:#15803d}.tag.md{background:#fdf0da;color:#a35b00}.tag.lo{background:#eef2f7;color:#64748b}
-
-  /* MATRIX */
-  .matrix{padding:16px}
-  .mtable{border-collapse:separate;border-spacing:8px}
-  .mtable th{font-size:12px;color:var(--muted);font-weight:600;padding:4px}
-  .cell{background:#f7fafd;border:1px solid var(--border);border-radius:10px;padding:10px;min-width:190px;height:150px;vertical-align:top;overflow:auto}
-  .cell.qw{background:#eafaf0;border-color:#bfe6cc}
-  .cell .cl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
-  .cchip{display:inline-block;margin:2px;padding:3px 8px;border-radius:7px;color:#fff;font-size:11px;cursor:pointer;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .cchip.dim{opacity:.25}
-  .axis-y{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;color:var(--muted);font-weight:600}
-
-  /* BY ROLE */
-  .roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:16px}
-  .rcard{border:1px solid var(--border);border-radius:12px;padding:14px}
-  .rcard h4{margin:0 0 8px;font-size:14px;color:var(--navy)}
-  .rstat{display:flex;gap:16px;margin-bottom:10px}
-  .rstat div .n{font-size:19px;font-weight:600;color:var(--navy)}
-  .rstat div .t{font-size:11px;color:var(--muted)}
-  .mix{display:flex;height:12px;border-radius:6px;overflow:hidden;border:1px solid var(--border)}
-  .mix span{display:block;height:100%}
-
-  /* POPOVER */
-  #pop{position:fixed;z-index:9999;width:340px;max-height:88vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(10,37,64,.22);padding:14px 16px;display:none}
-  #pop h3{margin:0 6px 8px 0;font-size:15px;color:var(--navy);display:inline-block}
-  #pop .close{position:absolute;top:8px;right:10px;border:0;background:transparent;font-size:18px;cursor:pointer;color:var(--muted)}
-  #pop .badges{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
-  #pop .b{font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;color:#fff}
-  #pop .meta{font-size:12px;color:var(--muted);margin-bottom:10px}
-  #pop section{margin-bottom:10px}
-  #pop section .st{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:3px}
-  #pop section .sc{font-size:13px}
-  #pop .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  #pop .ctrl{background:#fff5f5;border:1px solid #f6cccc;border-radius:9px;padding:8px 10px}
-  #pop .ctrl.ok{background:#f0fbf4;border-color:#c4e8d0}
-  #pop .ctrl .row{display:flex;gap:8px;font-size:12px;margin-top:4px}
-  #pop .ctrl .row b{min-width:52px;color:var(--muted);font-weight:600}
-  #pop .toolrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  #pop .toollink{display:inline-flex;align-items:center;gap:4px;background:#eef3fb;border:1px solid #d3e0f0;color:var(--navy);text-decoration:none;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
-  #pop .toollink:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
-  #pop .toollink .ext{font-size:10px;opacity:.8}
-  #pop .toolrow .or{color:var(--muted);font-size:11px}
-
-  footer{margin-top:22px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
-  footer b{color:var(--navy)}
-
-  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
-  @media print{
-    header.top{background:var(--navy)!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .controls,.procTabs,.legend .grp:last-child,.zoom,.btn,.seg{display:none!important}
-    .mapScroll,.listScroll{max-height:none;overflow:visible}
-    .view{display:block!important;page-break-inside:avoid}
-    #pop{display:none!important}
-    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  }
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+  .kpi .num{font-size:24px;font-weight:800;color:var(--navy);line-height:1}
+  .kpi .num.good{color:var(--hi)} .kpi .num.warn{color:var(--risk)}
+  .kpi .lab{font-size:11px;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.03em}
+  .kpi .delta{font-size:11px;font-weight:700;margin-top:5px}
+  /* diagram */
+  .diagram-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0;overflow:hidden}
+  .scroll{overflow-x:auto;overflow-y:hidden}
+  .canvas{position:relative}
+  .lane{position:absolute;left:0;border-bottom:1px solid var(--line)}
+  .lane.alt{background:#fbfcfe}
+  .lanelabel{position:absolute;left:0;top:0;bottom:0;width:30px;background:#f0f4f9;border-right:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center}
+  .lanelabel span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10.5px;font-weight:800;
+    letter-spacing:.04em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+  svg.conn{position:absolute;left:0;top:0;pointer-events:none}
+  .node{position:absolute;background:var(--bpmn);border:1.5px solid var(--bpmnb);border-radius:9px;
+    padding:8px 9px;cursor:pointer;transition:.18s;box-shadow:0 1px 2px rgba(10,37,64,.06);z-index:3}
+  .node:hover{box-shadow:0 4px 14px rgba(10,37,64,.16);transform:translateY(-1px)}
+  .node .nn{font-size:11px;font-weight:700;line-height:1.25;color:var(--ink)}
+  .node .nsys{font-size:9.5px;color:var(--muted);margin-top:4px;font-weight:600}
+  .node .corner{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;
+    display:none;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;z-index:4}
+  .node .apbadge{position:absolute;bottom:-9px;left:8px;font-size:9.5px;font-weight:800;color:#fff;
+    padding:1px 6px;border-radius:10px;display:none}
+  .node .autotag{position:absolute;top:-9px;left:8px;font-size:9px;font-weight:800;color:#fff;background:var(--navy);
+    padding:1px 6px;border-radius:10px;display:none}
+  .node .toolmark{position:absolute;bottom:-9px;right:8px;font-size:10px;font-weight:800;background:#fff;border:1.5px solid var(--agentic);
+    color:var(--agentic);width:19px;height:19px;border-radius:50%;display:none;align-items:center;justify-content:center;z-index:4}
+  .node.sel{outline:3px solid rgba(124,58,237,.35)}
+  .event{position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .event .circ{width:32px;height:32px;border-radius:50%;border:2.5px solid #6b7a8d;background:#fff}
+  .event .circ.end{border-color:#b04a4a;border-width:3px}
+  .event .lbl{font-size:9.5px;color:var(--muted);font-weight:700;text-align:center;max-width:104px;line-height:1.2}
+  /* drawer */
+  .drawer{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:16px;min-height:120px}
+  .drawer.empty{color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px}
+  .dr-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .dr-title{font-size:16px;font-weight:800;color:var(--navy)}
+  .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}
+  .dr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .cell{background:#fafcff;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .cell .l{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+  .cell .v{font-size:13px;font-weight:700;margin-top:3px}
+  .block{margin-bottom:11px}
+  .block h5{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .block p{margin:0;font-size:13px}
+  .imp{color:#166534} .risk-open{color:var(--risk);font-weight:600} .risk-closed{color:#166534;font-weight:600}
+  .dr-actions{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .toolbtn{border:none;background:var(--agentic);color:#fff;font-weight:800;font-size:13px;padding:11px 18px;border-radius:9px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;transition:.15s}
+  .toolbtn:hover{background:#6d28d9}
+  .notool{font-size:12.5px;color:var(--muted);font-weight:700;background:#f3f5f8;border:1px solid var(--line);padding:9px 14px;border-radius:9px}
+  .foot{margin-top:22px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+  .pill{display:inline-block;background:#fff4d6;color:#8a5a00;border:1px solid #f2d489;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(10,37,64,.42);display:none;align-items:flex-start;justify-content:center;
+    z-index:50;padding:34px 16px;overflow-y:auto}
+  .overlay.on{display:flex}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:720px;box-shadow:0 24px 60px rgba(10,37,64,.3);overflow:hidden}
+  .m-head{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:18px 22px;position:relative}
+  .m-kind{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8fd0ff}
+  .m-title{font-size:18px;font-weight:800;margin-top:3px;padding-right:38px}
+  .m-blurb{font-size:12.5px;opacity:.85;margin-top:5px;max-width:560px}
+  .m-close{position:absolute;top:14px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;
+    border-radius:8px;font-size:18px;cursor:pointer;line-height:1}
+  .m-close:hover{background:rgba(255,255,255,.28)}
+  .m-body{padding:20px 22px}
+  .fld{margin-bottom:13px}
+  .fld label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:5px}
+  .fld input,.fld textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13px;
+    font-family:inherit;color:var(--ink);background:#fcfdff;resize:vertical}
+  .fld textarea{min-height:96px}
+  .fld input:focus,.fld textarea:focus{outline:none;border-color:var(--agentic);background:#fff}
+  .m-run{display:flex;gap:12px;align-items:center;margin-top:4px}
+  .runbtn{border:none;background:var(--agentic);color:#fff;font-weight:800;font-size:14px;padding:11px 22px;border-radius:9px;cursor:pointer;transition:.15s}
+  .runbtn:hover{background:#6d28d9}
+  .runbtn:disabled{opacity:.6;cursor:default}
+  .resetlink{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none}
+  .m-out{margin-top:16px;border:1px solid var(--line);border-radius:10px;background:#fafcff;padding:14px 16px;font-size:13px;
+    display:none;max-height:420px;overflow:auto}
+  .m-out.on{display:block}
+  .m-out .out-head{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:8px;
+    display:flex;justify-content:space-between}
+  .out-body h4{margin:10px 0 5px;font-size:13px;color:var(--navy)} .out-body p{margin:0 0 8px} .out-body ul{margin:4px 0 10px 18px;padding:0}
+  .out-body li{margin:2px 0} .out-body code{background:#eef2f7;padding:1px 5px;border-radius:4px;font-size:12px}
+  .out-body table{border-collapse:collapse;margin:6px 0;font-size:12.5px;width:100%} .out-body th,.out-body td{border:1px solid var(--line);padding:5px 9px;text-align:left}
+  .out-body th{background:#f0f4f9}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid #cbd5e1;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .errbox{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:9px;padding:11px 14px;font-size:12.5px;margin-top:14px;display:none}
+  .errbox.on{display:block}
+  .demo-note{font-size:11px;color:var(--muted);margin-top:10px}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.dr-grid{grid-template-columns:repeat(2,1fr)}}
+  @media print{.tabs,.controls,.toolbtn,.overlay{display:none!important}.diagram-card{overflow:visible}.scroll{overflow:visible}}
 </style>
 </head>
 <body>
 <header class="top">
-  <h1>Process Improvement Explorer <span class="demo-badge">Demo — illustrative data</span></h1>
-  <p>Original-style business process maps for a fictitious value retailer, <b>Northwind Retail</b>, with an AI &amp; automation improvement layer overlaid step-by-step — see which work automates, which stays human, and which control gaps close. All data is synthetic and directional.</p>
+  <div class="wrap">
+    <div class="brandrow"><span class="chev">&#10095;</span> NORTHWIND RETAIL &nbsp;·&nbsp; PROCESS IMPROVEMENT EXPLORER
+      <span class="badge">Demo — illustrative data</span></div>
+    <h1 id="ptitle">—</h1>
+    <div class="sub">The process as it runs today, in its original swimlanes. Switch to <b>With improvements</b> to see which steps automate, which stay human, and which control gaps close — then click any step to open a <b>working AI tool</b> that does that step's job on demo data.</div>
+    <div class="tabs" id="tabs"></div>
+  </div>
 </header>
 
 <div class="wrap">
-
-  <div class="procTabs" id="procTabs"></div>
-
   <div class="controls">
-    <div class="seg" id="viewSeg">
-      <button data-view="map" class="active">Map</button>
-      <button data-view="list">List</button>
-      <button data-view="matrix">Priority matrix</button>
-      <button data-view="role">By role</button>
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+      <div class="seg" id="seg">
+        <button data-m="current" class="active">Current state</button>
+        <button data-m="improved" class="imp">With improvements</button>
+      </div>
+      <span class="hint">Click any step for its improvement detail &amp; live tool.</span>
     </div>
-    <div class="seg mode" id="modeSeg">
-      <button data-mode="current" class="active">Current state</button>
-      <button data-mode="improved">With improvements</button>
-    </div>
-    <div class="spacer"></div>
-    <div class="zoom" id="zoomBox">
-      <span style="font-size:12px;color:var(--muted)">Zoom</span>
-      <button id="zOut">−</button><button id="zIn">+</button>
-    </div>
-    <button class="btn" id="printBtn">Export / Print</button>
+    <div class="legend" id="legend" style="display:none"></div>
   </div>
 
   <div class="kpis" id="kpis"></div>
 
-  <div class="legend" id="legend"></div>
-
-  <div class="panel">
-    <div class="view active" id="view-map"><div class="mapScroll"><div class="stageWrap" id="stageWrap"></div></div></div>
-    <div class="view" id="view-list"><div class="listScroll"><table id="listTable"><thead></thead><tbody></tbody></table></div></div>
-    <div class="view" id="view-matrix"><div class="matrix" id="matrixHost"></div></div>
-    <div class="view" id="view-role"><div class="roles" id="rolesHost"></div></div>
+  <div class="diagram-card">
+    <div class="scroll"><div class="canvas" id="canvas"></div></div>
   </div>
 
-  <footer>
-    <b>DIRECTIONAL — not a business case.</b> Automation-potential (Auto %) figures are the estimated share of a task's effort that shifts off a human with today's technology; they are judgement-based estimates, not measured savings, and technical potential is not the same as headcount reduction. Hardening these into € and FTE requires FTE by role/location, task volumes and cycle times, and the confirmed technology stack. All companies, roles and systems shown are fictitious.
-  </footer>
+  <div class="drawer empty" id="drawer">Select a step to see its improvement, skills shift, control impact — and open its AI tool.</div>
+
+  <div class="foot">
+    <p><span class="pill">DIRECTIONAL</span> &nbsp;Automation potential = estimated share of a step's effort that shifts off a human with today's technology. Figures are illustrative estimates from the process map; to convert into € / FTE we need headcount, task volumes &amp; cycle times and the tech stack. Each step's tool runs live on synthetic demo data. Prepared by NovelVision.</p>
+  </div>
 </div>
 
-<div id="pop"><button class="close" id="popClose">×</button><div id="popBody"></div></div>
-
-<script>
-/* ---------- workforce config ---------- */
-const WF = {
-  Agentic:{label:"Agentic AI", color:"#7c3aed"},
-  RPA:{label:"RPA / Automation", color:"#0ea5e9"},
-  Gen:{label:"Generative AI", color:"#f59e0b"},
-  Aug:{label:"Augmented Human", color:"#0d9488"},
-  Human:{label:"Human", color:"#475569"}
-};
-const WF_ORDER = ["Agentic","RPA","Gen","Aug","Human"];
-function apColor(ap){ return ap>=70?"#16a34a":ap>=45?"#f59e0b":"#94a3b8"; }
-
-/* ---------- enabling-tool catalog ---------- */
-/* Generic, off-the-shelf automation / AI vendors that could actually implement each step.
-   These are public product names (not client data). */
-const TOOLS = {
-  "Microsoft Power Automate":"https://www.microsoft.com/power-platform/products/power-automate",
-  "UiPath":"https://www.uipath.com",
-  "Zapier":"https://zapier.com",
-  "Make":"https://www.make.com",
-  "n8n":"https://n8n.io",
-  "Claude (Anthropic)":"https://claude.ai",
-  "Claude Agent SDK":"https://www.anthropic.com/claude",
-  "Microsoft Copilot Studio":"https://www.microsoft.com/microsoft-copilot/microsoft-copilot-studio",
-  "Microsoft 365 Copilot":"https://www.microsoft.com/microsoft-365/copilot",
-  "DocuSign":"https://www.docusign.com",
-  "Adobe Acrobat Sign":"https://www.adobe.com/sign",
-  "DeepL":"https://www.deepl.com",
-  "Calendly":"https://calendly.com"
-};
-/* Pick a real tool for a step: keyword rules on name/imp/tech first, then workforce fallback.
-   Human steps stay tool-free (checked first so e.g. "sign-off"/"discuss schedule" don't false-match). */
-function suggestTool(s){
-  if(s.wf==="Human") return null;                       // human judgement — no tool
-  const t=((s.name||"")+" "+(s.imp||"")+" "+(s.tech||"")).toLowerCase();
-  // tool-specific rules (any workforce)
-  if(/e-?sign|signature|\bsigning\b/.test(t) || (/\bsigned?\b/.test(t) && /contract/.test(t)))
-                                                             return {primary:"DocuSign", alt:"Adobe Acrobat Sign"};
-  if(/translat/.test(t))                                     return {primary:"DeepL", alt:"Claude (Anthropic)"};
-  if(/intake meeting|appointment|\bbooking\b|medical health check|scheduling with provider|schedule[^.]*train|train[^.]*schedul/.test(t))
-                                                             return {primary:"Microsoft Power Automate", alt:"Calendly"};
-  // content creation — only for content-oriented workforces (so routing/filing RPA isn't mislabelled)
-  if((s.wf==="Gen"||s.wf==="Aug") && /\bdraft|write|generat|document generation|one[- ]?pager|\bletter\b|assembl/.test(t))
-                                                             return {primary:"Claude (Anthropic)", alt:"Microsoft 365 Copilot"};
-  // workforce fallback
-  switch(s.wf){
-    case "Gen":     return {primary:"Claude (Anthropic)", alt:"Microsoft 365 Copilot"};
-    case "Agentic": return {primary:"Claude Agent SDK", alt:"Microsoft Copilot Studio"};
-    case "RPA":     return {primary:"Microsoft Power Automate", alt:"UiPath"};
-    case "Aug":     return {primary:"Microsoft 365 Copilot", alt:"Claude (Anthropic)"};
-  }
-  return null;
-}
-function toolChip(name){
-  const url=TOOLS[name]; if(!url) return "";
-  return `<a class="toollink" href="${url}" target="_blank" rel="noopener noreferrer">${name} <span class="ext">↗</span></a>`;
-}
-function toolSection(s){
-  const t=suggestTool(s);
-  if(!t) return `<section><div class="st">Enabling tool</div><div class="sc" style="color:var(--muted)">Human judgement — no tool</div></section>`;
-  const altHtml = t.alt && t.alt!==t.primary ? `<span class="or">or</span>${toolChip(t.alt)}` : "";
-  return `<section><div class="st">Enabling tool</div><div class="sc toolrow">${toolChip(t.primary)}${altHtml}</div></section>`;
-}
-
-/* ---------- process metadata ---------- */
-const PROCS = {
-  req:{name:"Create & Post Job Requisition", lanes:["HR Administrator","Recruiter","HR Business Partner","Hiring Manager"], freed:"35–50%"},
-  onb:{name:"Employee Pre-boarding", lanes:["HR Administrator","People Coordinator","Hiring Manager"], freed:"40–55%"},
-  pay:{name:"Create Payroll Input", lanes:["HR Administrator","Payroll Expert"], freed:"45–60%"},
-  saf:{name:"Plan Mandatory Safety Training", lanes:["Safety Coordinator","Capacity Planner","Trainer","Team Lead"], freed:"35–50%"}
-};
-
-/* ---------- step data ---------- */
-/* lane = index into PROCS[x].lanes ; col = left-to-right order */
-let RAW = [
-/* ===== REQUISITION ===== */
-{id:"req1",process:"req",lane:2,col:0,name:"Put vacancy on list",role:"HR Business Partner",sys:"Document store",now:"Manual",wf:"RPA",ap:72,effort:"Low",conf:"Medium",
- imp:"Auto-append approved openings to the vacancy list from the approval record.",skill:"Build: exception handling; Retire: manual list upkeep.",tech:"RPA bot syncing approval record → vacancy list",prereq:"Approval workflow with structured status",impact:"Always-current list, no manual re-keying",
- gap:true,risk:"Unauthorised vacancy opening — no check that the position is approved.",fix:"Bot only writes rows carrying an approved requisition ID; unapproved entries are blocked."},
-{id:"req2",process:"req",lane:2,col:1,name:"Share C&B job description & salary range",role:"HR Business Partner",sys:"Email",now:"Manual",wf:"RPA",ap:68,effort:"Low",conf:"Medium",
- imp:"Auto-pull the matching C&B description and band and send to the recruiter.",skill:"Build: pay-framework literacy; Retire: lookup & copy-paste.",tech:"RPA bot querying the C&B library",prereq:"Structured job-grade → band mapping",impact:"Consistent, correct bands shared instantly"},
-{id:"req3",process:"req",lane:1,col:2,name:"Plan intake meeting with hiring manager",role:"Recruiter",sys:"Email / Calendar",now:"Manual",wf:"Aug",ap:55,effort:"Low",conf:"Medium",
- imp:"AI copilot proposes slots and drafts the agenda; recruiter confirms.",skill:"Build: consultative intake; Retire: diary tetris.",tech:"AI copilot (human-in-the-loop) scheduling",prereq:"Calendar access",impact:"Faster scheduling, recruiter keeps the conversation"},
-{id:"req4",process:"req",lane:1,col:3,name:"Create vacancy text",role:"Recruiter",sys:"Docs",now:"Manual",wf:"Gen",ap:82,effort:"Medium",conf:"High",
- imp:"Generate a first-draft vacancy text from the intake notes and template.",skill:"Build: prompt & edit; Retire: blank-page drafting.",tech:"Generative AI drafting from template + intake",prereq:"Vacancy template + intake capture",impact:"Draft in minutes, recruiter edits for tone"},
-{id:"req5",process:"req",lane:1,col:4,name:"Send vacancy text for review",role:"Recruiter",sys:"Email",now:"Manual",wf:"RPA",ap:88,effort:"Low",conf:"High",
- imp:"Route the draft to the correct hiring manager automatically.",skill:"Build: nothing new; Retire: manual addressing.",tech:"RPA bot routing on requisition owner",prereq:"Owner field on the requisition",impact:"Right recipient every time",
- gap:true,risk:"Vacancy text sent to the wrong receiver — no addressing control.",fix:"Recipient is resolved from the requisition owner field, not typed by hand."},
-{id:"req6",process:"req",lane:3,col:5,name:"Review vacancy text & share feedback",role:"Hiring Manager",sys:"Email",now:"Manual",wf:"Human",ap:30,effort:"—",conf:"High",
- imp:"Stays human — hiring manager judgement on role framing.",skill:"Keep: role expertise & judgement.",tech:"Human review",prereq:"—",impact:"Quality and ownership of the role content"},
-{id:"req7",process:"req",lane:1,col:6,name:"Process feedback",role:"Recruiter",sys:"Docs",now:"Manual",wf:"Aug",ap:62,effort:"Low",conf:"Medium",
- imp:"AI merges tracked feedback into the draft; recruiter accepts changes.",skill:"Build: review/curate; Retire: manual merge.",tech:"AI copilot merging comments",prereq:"Structured comments",impact:"Faster consolidation, fewer missed edits"},
-{id:"req8",process:"req",lane:1,col:7,name:"Request vacancy translation",role:"Recruiter",sys:"Translation service",now:"Manual",wf:"Agentic",ap:80,effort:"Medium",conf:"Medium",
- imp:"Agent submits, tracks and files the translation end-to-end.",skill:"Build: oversight; Retire: manual hand-off & chase.",tech:"AI agent orchestrating the translation service",prereq:"API access + glossary",impact:"No dropped or delayed translations",
- gap:true,risk:"Incorrect translation of the vacancy text goes unchecked.",fix:"Agent enforces an approved glossary and flags low-confidence segments for human check."},
-{id:"req9",process:"req",lane:1,col:8,name:"Save vacancy text",role:"Recruiter",sys:"Document store",now:"Manual",wf:"RPA",ap:90,effort:"Low",conf:"High",
- imp:"Auto-file the final text in the correct requisition folder.",skill:"Retire: manual filing.",tech:"RPA bot filing to document store",prereq:"Folder convention",impact:"Nothing lost, consistent naming"},
-{id:"req10",process:"req",lane:1,col:9,name:"Request requisition creation",role:"Recruiter",sys:"Ticketing",now:"Manual",wf:"RPA",ap:84,effort:"Low",conf:"Medium",
- imp:"Auto-raise a complete requisition ticket from the vacancy record.",skill:"Build: exception triage; Retire: form filling.",tech:"RPA bot raising a pre-filled ticket",prereq:"Mapped fields vacancy → ticket",impact:"Complete requests, fewer reworks",
- gap:true,risk:"Incomplete request for creation of the requisition.",fix:"Bot validates all mandatory fields before submission and rejects incomplete records."},
-{id:"req11",process:"req",lane:0,col:10,name:"Create requisition & post vacancy",role:"HR Administrator",sys:"HRIS",now:"Manual",wf:"Agentic",ap:85,effort:"Medium",conf:"High",
- imp:"Agent creates the requisition and posts to all channels.",skill:"Build: monitor postings; Retire: multi-system entry.",tech:"AI agent orchestrating HRIS + job channels",prereq:"HRIS + channel API access",impact:"Same-day posting across channels"},
-{id:"req12",process:"req",lane:1,col:11,name:"Check posted vacancy",role:"Recruiter",sys:"HRIS",now:"Manual",wf:"RPA",ap:76,effort:"Low",conf:"Medium",
- imp:"Bot compares live posting against the source text and flags diffs.",skill:"Build: resolve flags; Retire: eyeball checking.",tech:"RPA verification bot",prereq:"Access to live postings",impact:"Errors caught automatically"},
-{id:"req13",process:"req",lane:1,col:12,name:"Check job-board postings",role:"Recruiter",sys:"Job channels",now:"Manual",wf:"RPA",ap:74,effort:"Low",conf:"Medium",
- imp:"Bot confirms the vacancy is live and correct on each board.",skill:"Retire: manual board checks.",tech:"RPA monitoring bot",prereq:"Board access",impact:"Guaranteed correct external presence"},
-{id:"req14",process:"req",lane:0,col:13,name:"Close ticket",role:"HR Administrator",sys:"Ticketing",now:"Manual",wf:"RPA",ap:92,effort:"Low",conf:"High",
- imp:"Auto-close the ticket once posting is verified.",skill:"Retire: manual closure.",tech:"RPA bot",prereq:"Verification signal",impact:"Clean queue, accurate SLA data"},
-
-/* ===== PRE-BOARDING ===== */
-{id:"onb1",process:"onb",lane:2,col:0,name:"Start onboarding administration",role:"Hiring Manager",sys:"HRIS",now:"Manual",wf:"RPA",ap:70,effort:"Low",conf:"Medium",
- imp:"Trigger onboarding automatically when a candidate is marked hired.",skill:"Retire: manual initiation.",tech:"RPA trigger on recruitment status",prereq:"Status webhook",impact:"No forgotten starts"},
-{id:"onb2",process:"onb",lane:0,col:1,name:"Review new-hire data",role:"HR Administrator",sys:"HRIS",now:"Manual",wf:"Aug",ap:66,effort:"Low",conf:"Medium",
- imp:"AI flags missing/inconsistent fields; admin confirms.",skill:"Build: exception handling; Retire: line-by-line review.",tech:"AI copilot validating the record",prereq:"Field rules",impact:"Clean data before contracting"},
-{id:"onb3",process:"onb",lane:0,col:2,name:"Duplicate / rehire match",role:"HR Administrator",sys:"HRIS",now:"Manual",wf:"Agentic",ap:80,effort:"Medium",conf:"Medium",kind:"gateway",
- imp:"Agent matches against existing records and routes duplicates.",skill:"Build: adjudicate matches; Retire: manual search.",tech:"AI agent matching identity data",prereq:"Identity index",impact:"No duplicate profiles created",
- gap:true,risk:"Unauthorised / duplicate employee onboarded.",fix:"Automated identity check must clear before onboarding can proceed; matches raise a ticket."},
-{id:"onb4",process:"onb",lane:0,col:3,name:"Initiate onboarding",role:"HR Administrator",sys:"HRIS",now:"Manual",wf:"Agentic",ap:82,effort:"Medium",conf:"High",
- imp:"Agent provisions the onboarding case and downstream tasks.",skill:"Build: monitor exceptions; Retire: manual setup.",tech:"AI agent orchestrating onboarding modules",prereq:"HRIS access",impact:"Consistent, complete case creation"},
-{id:"onb5",process:"onb",lane:0,col:4,name:"Generate contract",role:"HR Administrator",sys:"Docs",now:"Manual",wf:"Gen",ap:85,effort:"Medium",conf:"High",
- imp:"Generate the contract from data + the correct country template.",skill:"Build: template governance; Retire: manual assembly.",tech:"Generative AI assembling from data + template",prereq:"Clean data + template library",impact:"Accurate contracts in seconds"},
-{id:"onb6",process:"onb",lane:0,col:5,name:"Check contract (peer review, rehire)",role:"HR Administrator",sys:"Docs",now:"Manual",wf:"Human",ap:35,effort:"—",conf:"High",
- imp:"Stays human — peer review for rehires within 6 months.",skill:"Keep: compliance judgement.",tech:"Human peer review",prereq:"—",impact:"Compliance assurance on sensitive cases"},
-{id:"onb7",process:"onb",lane:0,col:6,name:"Send contract & annexes",role:"HR Administrator",sys:"Email",now:"Manual",wf:"RPA",ap:88,effort:"Low",conf:"High",
- imp:"Auto-send the contract pack to the new hire.",skill:"Retire: manual dispatch.",tech:"RPA bot with e-sign link",prereq:"E-sign integration",impact:"Same-day dispatch"},
-{id:"onb8",process:"onb",lane:0,col:7,name:"Receive signed contract",role:"HR Administrator",sys:"Document store",now:"Manual",wf:"RPA",ap:72,effort:"Low",conf:"Medium",
- imp:"Auto-capture the signed contract and update status.",skill:"Build: chase exceptions; Retire: inbox watching.",tech:"RPA bot on e-sign callback",prereq:"E-sign webhook",impact:"Real-time signature status",
- gap:true,risk:"Compliance risk — contract not signed before day 1, no control in place.",fix:"Automated reminders + a hard block on start until a signed contract is recorded."},
-{id:"onb9",process:"onb",lane:0,col:8,name:"Archive signed documents",role:"HR Administrator",sys:"Document store",now:"Manual",wf:"RPA",ap:90,effort:"Low",conf:"High",
- imp:"File documents to the employee record with retention tags.",skill:"Retire: manual archiving.",tech:"RPA bot filing with metadata",prereq:"Retention schema",impact:"Audit-ready records"},
-{id:"onb10",process:"onb",lane:0,col:9,name:"Finalize onboarding",role:"HR Administrator",sys:"HRIS",now:"Manual",wf:"Agentic",ap:78,effort:"Medium",conf:"Medium",
- imp:"Agent closes out the case and confirms all sub-tasks done.",skill:"Build: exception handling; Retire: manual checklist.",tech:"AI agent orchestrating completion checks",prereq:"Task status feeds",impact:"Nothing falls through the cracks"},
-{id:"onb11",process:"onb",lane:1,col:10,name:"Generate learning plan",role:"People Coordinator",sys:"Learning system",now:"Manual",wf:"Gen",ap:76,effort:"Medium",conf:"Medium",
- imp:"Generate a role-based learning plan; coordinator confirms.",skill:"Build: curate content; Retire: manual plan building.",tech:"Generative AI proposing curriculum",prereq:"Role → curriculum map",impact:"Consistent, complete plans"},
-{id:"onb12",process:"onb",lane:0,col:11,name:"Assign clock badge number",role:"HR Administrator",sys:"Time & Attendance",now:"Manual",wf:"RPA",ap:68,effort:"Low",conf:"Medium",
- imp:"Auto-assign and link the badge to the employee profile.",skill:"Build: resolve mismatches; Retire: manual linking.",tech:"RPA bot linking badge ↔ profile",prereq:"Time system API",impact:"Correct time capture from day 1",
- gap:true,risk:"Incorrect connection of employee to their time-system profile.",fix:"Bot links by unique employee ID and verifies the reverse lookup before saving."},
-{id:"onb13",process:"onb",lane:2,col:12,name:"Plan medical health check",role:"Hiring Manager",sys:"Email / Calendar",now:"Manual",wf:"Agentic",ap:74,effort:"Medium",conf:"Medium",
- imp:"Agent books the check with the provider and notifies the hire.",skill:"Build: oversight; Retire: manual booking.",tech:"AI agent scheduling with provider",prereq:"Provider booking API",impact:"On-time, tracked appointments"},
-{id:"onb14",process:"onb",lane:2,col:13,name:"Hand out welcome bag",role:"Hiring Manager",sys:"—",now:"Manual",wf:"Human",ap:20,effort:"—",conf:"High",
- imp:"Stays human — the personal welcome moment.",skill:"Keep: onboarding experience & rapport.",tech:"Human",prereq:"—",impact:"Positive day-1 experience"},
-
-/* ===== PAYROLL ===== */
-{id:"pay1",process:"pay",lane:1,col:0,name:"Email stakeholders with payroll planning",role:"Payroll Expert",sys:"Email",now:"Manual",wf:"RPA",ap:90,effort:"Low",conf:"High",
- imp:"Auto-send the period planning to all stakeholders.",skill:"Retire: manual mailouts.",tech:"RPA bot on the payroll calendar",prereq:"Distribution list",impact:"Everyone aligned on the cadence"},
-{id:"pay2",process:"pay",lane:1,col:1,name:"Run & export employee query",role:"Payroll Expert",sys:"HRIS",now:"Manual",wf:"RPA",ap:86,effort:"Low",conf:"High",timer:"Mon",
- imp:"Scheduled export of the employee query for the period.",skill:"Retire: manual report runs.",tech:"RPA scheduled export",prereq:"Query definition",impact:"On-time, consistent data pull"},
-{id:"pay3",process:"pay",lane:0,col:2,name:"Export time & absence data",role:"HR Administrator",sys:"Time & Attendance",now:"Manual",wf:"RPA",ap:88,effort:"Low",conf:"High",
- imp:"Auto-export time & absence for the period.",skill:"Retire: manual exports.",tech:"RPA scheduled export",prereq:"Time system access",impact:"No missed source data"},
-{id:"pay4",process:"pay",lane:0,col:3,name:"Upload payroll input data",role:"HR Administrator",sys:"Payroll engine",now:"Manual",wf:"RPA",ap:84,effort:"Low",conf:"High",
- imp:"Auto-load the prepared input into the payroll engine.",skill:"Build: exception triage; Retire: manual upload.",tech:"RPA loader with schema checks",prereq:"Payroll import format",impact:"Fewer load errors"},
-{id:"pay5",process:"pay",lane:0,col:4,name:"Validate mutations (HR/salary)",role:"HR Administrator",sys:"Payroll engine",now:"Manual",wf:"Aug",ap:64,effort:"Low",conf:"Medium",
- imp:"AI flags anomalous mutations; admin validates the exceptions.",skill:"Build: anomaly review; Retire: full manual scan.",tech:"AI copilot anomaly detection",prereq:"Historical baselines",impact:"Focus only on the outliers"},
-{id:"pay6",process:"pay",lane:1,col:5,name:"Perform payroll controls",role:"Payroll Expert",sys:"Payroll engine",now:"Manual",wf:"Agentic",ap:80,effort:"Medium",conf:"Medium",timer:"Tue",
- imp:"Agent runs the standard control set and compiles results.",skill:"Build: interpret results; Retire: manual control runs.",tech:"AI agent running control battery",prereq:"Codified control rules",impact:"Full, repeatable controls each cycle"},
-{id:"pay7",process:"pay",lane:1,col:6,name:"Register errors on error list",role:"Payroll Expert",sys:"Document store",now:"Manual",wf:"RPA",ap:78,effort:"Low",conf:"Medium",
- imp:"Auto-log control failures to the error list with context.",skill:"Retire: manual logging.",tech:"RPA bot writing structured error records",prereq:"Error-list schema",impact:"Complete, traceable error log",
- gap:true,risk:"Errors not consistently logged — no audit trail of what failed.",fix:"Every failed control auto-writes a structured, timestamped record; nothing relies on manual note-taking."},
-{id:"pay8",process:"pay",lane:0,col:7,name:"Resolve errors in source systems",role:"HR Administrator",sys:"HRIS / Time & Attendance",now:"Manual",wf:"Aug",ap:60,effort:"Medium",conf:"Medium",
- imp:"AI proposes the likely fix per error; admin applies it.",skill:"Build: root-cause skills; Retire: rote correction.",tech:"AI copilot suggesting corrections",prereq:"Error → system mapping",impact:"Faster, more consistent fixes"},
-{id:"pay9",process:"pay",lane:1,col:8,name:"Perform payroll controls",role:"Payroll Expert",sys:"Payroll engine",now:"Manual",wf:"Agentic",ap:80,effort:"Medium",conf:"Medium",timer:"Wed",
- imp:"Second control pass after corrections, run by the agent.",skill:"Build: interpret results; Retire: manual re-runs.",tech:"AI agent re-running controls",prereq:"Codified control rules",impact:"Confidence that fixes held"},
-{id:"pay10",process:"pay",lane:1,col:9,name:"Perform payroll controls",role:"Payroll Expert",sys:"Payroll engine",now:"Manual",wf:"Agentic",ap:80,effort:"Medium",conf:"Medium",timer:"Thu",
- imp:"Final control pass ahead of the run, agent-driven.",skill:"Build: interpret results; Retire: manual re-runs.",tech:"AI agent running controls",prereq:"Codified control rules",impact:"Clean position before payroll runs"},
-{id:"pay11",process:"pay",lane:1,col:10,name:"Execute payroll controls",role:"Payroll Expert",sys:"Payroll engine",now:"Manual",wf:"Agentic",ap:82,effort:"Medium",conf:"Medium",
- imp:"Agent consolidates all control results into one status.",skill:"Build: oversight; Retire: manual consolidation.",tech:"AI agent aggregating control output",prereq:"Control result feeds",impact:"Single, clear go/no-go picture"},
-{id:"pay12",process:"pay",lane:1,col:11,name:"Complete payroll checklist",role:"Payroll Expert",sys:"Document store",now:"Manual",wf:"RPA",ap:75,effort:"Low",conf:"Medium",
- imp:"Auto-tick checklist items evidenced by system signals.",skill:"Build: exception sign-off; Retire: manual ticking.",tech:"RPA bot mapping evidence → checklist",prereq:"Evidence signals",impact:"Complete, evidenced checklist",
- gap:true,risk:"Incomplete checklist — steps marked done without evidence.",fix:"Items only tick when the underlying system signal is present; gaps are surfaced, not hidden."},
-{id:"pay13",process:"pay",lane:1,col:12,name:"Final payroll sign-off",role:"Payroll Expert",sys:"Payroll engine",now:"Manual",wf:"Human",ap:25,effort:"—",conf:"High",
- imp:"Stays human — accountable sign-off before the run.",skill:"Keep: accountability & judgement.",tech:"Human approval",prereq:"—",impact:"Clear ownership of the payroll"},
-
-/* ===== SAFETY TRAINING ===== */
-{id:"saf1",process:"saf",lane:0,col:0,name:"Create expiring-certificates overview",role:"Safety Coordinator",sys:"Learning system",now:"Manual",wf:"RPA",ap:88,effort:"Low",conf:"High",timer:"Monthly",
- imp:"Auto-generate the expiring-certificates report each month.",skill:"Retire: manual report building.",tech:"RPA scheduled report",prereq:"Certificate data",impact:"No expiries missed"},
-{id:"saf2",process:"saf",lane:0,col:1,name:"Share overview with local admins",role:"Safety Coordinator",sys:"Email",now:"Manual",wf:"RPA",ap:84,effort:"Low",conf:"High",
- imp:"Auto-distribute the overview to the right local admins.",skill:"Retire: manual distribution.",tech:"RPA bot routing by site",prereq:"Site → admin map",impact:"Right people informed on time"},
-{id:"saf3",process:"saf",lane:1,col:2,name:"Check which employees need training",role:"Capacity Planner",sys:"Learning system",now:"Manual",wf:"Agentic",ap:82,effort:"Medium",conf:"Medium",timer:"4-weekly",
- imp:"Agent compiles who needs which training and when.",skill:"Build: oversight; Retire: manual cross-referencing.",tech:"AI agent querying learning records",prereq:"Curriculum & expiry data",impact:"Accurate demand picture"},
-{id:"saf4",process:"saf",lane:1,col:3,name:"Inform team leads / trainers",role:"Capacity Planner",sys:"Email",now:"Manual",wf:"RPA",ap:80,effort:"Low",conf:"Medium",
- imp:"Auto-notify the relevant team leads and trainers.",skill:"Retire: manual notification.",tech:"RPA notification bot",prereq:"Contact directory",impact:"Consistent, timely notice"},
-{id:"saf5",process:"saf",lane:3,col:4,name:"Assign training to employee",role:"Team Lead",sys:"Learning system",now:"Manual",wf:"Agentic",ap:78,effort:"Medium",conf:"Medium",
- imp:"Agent creates the class and enrols the right employees.",skill:"Build: exception handling; Retire: manual enrolment.",tech:"AI agent creating classes & enrolments",prereq:"Learning system API",impact:"No one left unassigned",
- gap:true,risk:"Expiring certificate missed — employee not assigned in time.",fix:"Agent cross-checks assignments against the expiry list and flags anyone uncovered."},
-{id:"saf6",process:"saf",lane:2,col:5,name:"Create preliminary planning",role:"Trainer",sys:"Spreadsheet",now:"Manual",wf:"Aug",ap:66,effort:"Low",conf:"Medium",
- imp:"AI proposes a draft schedule from demand + capacity; trainer adjusts.",skill:"Build: optimise & confirm; Retire: manual scheduling.",tech:"AI copilot scheduling",prereq:"Capacity & demand data",impact:"Faster, better-balanced plans"},
-{id:"saf7",process:"saf",lane:2,col:6,name:"Inform employees about training",role:"Trainer",sys:"Email",now:"Manual",wf:"RPA",ap:82,effort:"Low",conf:"Medium",
- imp:"Auto-notify enrolled employees with date and location.",skill:"Retire: manual messaging.",tech:"RPA notification bot",prereq:"Enrolment data",impact:"Everyone knows when to attend"},
-{id:"saf8",process:"saf",lane:2,col:7,name:"Inform local admin of date & participants",role:"Trainer",sys:"Email",now:"Manual",wf:"RPA",ap:80,effort:"Low",conf:"Medium",
- imp:"Auto-share confirmed date and attendee list; capture attendance back.",skill:"Build: verify attendance; Retire: manual record-keeping.",tech:"RPA bot syncing attendance records",prereq:"Attendance capture",impact:"Reliable completion records",
- gap:true,risk:"No attendance record stored — completion not evidenced.",fix:"Attendance is captured to the learning record automatically at session close."},
-{id:"saf9",process:"saf",lane:2,col:8,name:"Discuss preliminary schedule",role:"Trainer",sys:"—",now:"Manual",wf:"Human",ap:30,effort:"—",conf:"Medium",
- imp:"Stays human — align the schedule with operational reality.",skill:"Keep: operational judgement & negotiation.",tech:"Human discussion",prereq:"—",impact:"Workable, agreed schedule"},
-{id:"saf10",process:"saf",lane:3,col:9,name:"Plan introductory (first) day",role:"Team Lead",sys:"Spreadsheet",now:"Manual",wf:"Aug",ap:58,effort:"Low",conf:"Medium",
- imp:"AI drafts the first-day plan; team lead tailors it.",skill:"Build: personalise; Retire: manual planning.",tech:"AI copilot planning",prereq:"Role templates",impact:"Consistent first-day experience"},
-{id:"saf11",process:"saf",lane:3,col:10,name:"Schedule additional trainings",role:"Team Lead",sys:"Learning system",now:"Manual",wf:"Agentic",ap:76,effort:"Medium",conf:"Medium",
- imp:"Agent schedules follow-on / refresher trainings automatically.",skill:"Build: oversight; Retire: manual scheduling.",tech:"AI agent scheduling refreshers",prereq:"Refresh rules",impact:"Refreshers never lapse"},
-{id:"saf12",process:"saf",lane:3,col:11,name:"Inform employees of upcoming training",role:"Team Lead",sys:"Email",now:"Manual",wf:"RPA",ap:84,effort:"Low",conf:"High",
- imp:"Auto-remind employees ahead of each session.",skill:"Retire: manual reminders.",tech:"RPA reminder bot",prereq:"Schedule data",impact:"Higher attendance"}
-];
-
-/* ---------- derive value / wave ---------- */
-function deriveValue(s){ if(s.gap||s.ap>=85) return "High"; if(s.ap>=65) return "Medium"; return "Low"; }
-function deriveWave(s){
-  if(s.wf==="Human") return "—";
-  const v=s.value;
-  if(s.effort==="Low" || (s.effort==="Medium" && v==="High")) return "H1";
-  return "H2";
-}
-RAW.forEach(s=>{ s.value=deriveValue(s); s.wave=deriveWave(s); });
-
-/* ---------- state ---------- */
-let state = { proc:"req", view:"map", mode:"current", zoom:1, wfFilter:new Set(), waveFilter:new Set(), sort:{key:"col",dir:1}, pinned:null };
-
-function stepsFor(p){ return RAW.filter(s=>s.process===p).sort((a,b)=>a.col-b.col); }
-function passFilter(s){
-  if(state.wfFilter.size && !state.wfFilter.has(s.wf)) return false;
-  if(state.waveFilter.size && !state.waveFilter.has(s.wave)) return false;
-  return true;
-}
-
-/* ---------- build proc tabs ---------- */
-const procTabs=document.getElementById("procTabs");
-Object.entries(PROCS).forEach(([k,v])=>{
-  const b=document.createElement("button"); b.textContent=v.name; b.dataset.p=k;
-  if(k===state.proc) b.classList.add("active");
-  b.onclick=()=>{ state.proc=k; hidePop(true); [...procTabs.children].forEach(c=>c.classList.toggle("active",c.dataset.p===k)); renderAll(); };
-  procTabs.appendChild(b);
-});
-
-/* ---------- segmented controls ---------- */
-document.getElementById("viewSeg").addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(!b) return;
-  state.view=b.dataset.view; hidePop(true);
-  [...e.currentTarget.children].forEach(c=>c.classList.toggle("active",c===b));
-  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
-  document.getElementById("view-"+state.view).classList.add("active");
-  document.getElementById("zoomBox").style.display = state.view==="map"?"inline-flex":"none";
-  renderAll();
-});
-document.getElementById("modeSeg").addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(!b) return;
-  state.mode=b.dataset.mode; hidePop(true);
-  [...e.currentTarget.children].forEach(c=>c.classList.toggle("active",c===b));
-  renderAll();
-});
-document.getElementById("zIn").onclick=()=>{ state.zoom=Math.min(1.8,state.zoom+0.15); applyZoom(); };
-document.getElementById("zOut").onclick=()=>{ state.zoom=Math.max(0.5,state.zoom-0.15); applyZoom(); };
-function applyZoom(){ document.getElementById("stageWrap").style.transform="scale("+state.zoom+")"; }
-document.getElementById("printBtn").onclick=()=>window.print();
-
-/* ---------- KPIs ---------- */
-function renderKpis(){
-  const host=document.getElementById("kpis"); const S=stepsFor(state.proc);
-  const total=S.length;
-  const gaps=S.filter(s=>s.gap).length;
-  let cards;
-  if(state.mode==="current"){
-    cards=[["Steps mapped",total],["Automated","0"],["Open control gaps",gaps],["Effort freed","0%"]];
-  } else {
-    const automated=S.filter(s=>s.wf!=="Human").length;
-    const qw=S.filter(s=>s.wave==="H1").length;
-    const closed=S.filter(s=>s.gap&&s.fix).length;
-    cards=[["Steps automated",automated+"/"+total],["Quick wins (H1)",qw],["Control gaps closed",closed+"/"+gaps],["Directional effort freed",PROCS[state.proc].freed]];
-  }
-  host.innerHTML=cards.map(c=>`<div class="kpi"><div class="v">${c[1]}</div><div class="l">${c[0]}</div></div>`).join("");
-}
-
-/* ---------- Legend ---------- */
-function renderLegend(){
-  const host=document.getElementById("legend");
-  const wf=WF_ORDER.map(k=>`<span class="chip ${state.wfFilter.size&&!state.wfFilter.has(k)?'off':''}" data-wf="${k}"><span class="dot" style="background:${WF[k].color}"></span>${WF[k].label}</span>`).join("");
-  const waves=["H1","H2"].map(w=>`<span class="chip wave ${state.waveFilter.size&&!state.waveFilter.has(w)?'off':''}" data-wave="${w}">Wave ${w}</span>`).join("");
-  host.innerHTML=`
-    <div class="grp"><span class="lbl">Workforce</span>${wf}</div>
-    <div class="grp"><span class="lbl">Wave</span>${waves}</div>
-    <div class="grp"><span class="lbl">Key</span>
-      <span class="keyitem"><span class="star">★</span> automates ≥70%</span>
-      <span class="keyitem"><span class="ring-red"></span> control gap</span>
-      <span class="keyitem"><span class="ring-grn"></span> gap closed</span>
-    </div>`;
-  host.querySelectorAll("[data-wf]").forEach(c=>c.onclick=()=>{ toggle(state.wfFilter,c.dataset.wf); renderAll(); });
-  host.querySelectorAll("[data-wave]").forEach(c=>c.onclick=()=>{ toggle(state.waveFilter,c.dataset.wave); renderAll(); });
-}
-function toggle(set,v){ set.has(v)?set.delete(v):set.add(v); hidePop(true); }
-
-/* ---------- MAP ---------- */
-const COLW=190, LANEH=118, BOXW=150, BOXH=56, HEADW=150, PADT=12;
-function renderMap(){
-  const wrap=document.getElementById("stageWrap");
-  const P=PROCS[state.proc]; const S=stepsFor(state.proc);
-  const nLanes=P.lanes.length;
-  const maxCol=Math.max(...S.map(s=>s.col));
-  const stageW=HEADW + (maxCol+1)*COLW + 60;
-  const stageH=nLanes*LANEH + 20;
-  let html=`<div class="stage" style="width:${stageW}px;height:${stageH}px">`;
-  // lane bands + labels
-  for(let i=0;i<nLanes;i++){
-    html+=`<div class="lane-band" style="top:${i*LANEH}px;height:${LANEH}px"></div>`;
-    html+=`<div class="lane-label" style="top:${i*LANEH}px;height:${LANEH}px">${P.lanes[i]}</div>`;
-  }
-  // svg wires
-  const boxX=s=>HEADW + s.col*COLW + (COLW-BOXW)/2;
-  const boxY=s=>s.lane*LANEH + (LANEH-BOXH)/2 + PADT;
-  let wires=`<svg class="wires" width="${stageW}" height="${stageH}">`;
-  // start event before first
-  const first=S[0], last=S[S.length-1];
-  const sEvtX=HEADW-6, sEvtY=boxY(first)+BOXH/2;
-  wires+=`<line x1="${sEvtX+13}" y1="${sEvtY}" x2="${boxX(first)}" y2="${sEvtY}" stroke="#94a3b8" stroke-width="1.5"/>`;
-  for(let i=0;i<S.length-1;i++){
-    const a=S[i], b=S[i+1];
-    const ax=boxX(a)+BOXW, ay=boxY(a)+BOXH/2;
-    const bx=boxX(b), by=boxY(b)+BOXH/2;
-    const mx=ax+(bx-ax)/2;
-    wires+=`<path d="M${ax},${ay} H${mx} V${by} H${bx}" fill="none" stroke="#b8c4d2" stroke-width="1.5"/>`;
-    wires+=`<polygon points="${bx-6},${by-4} ${bx},${by} ${bx-6},${by+4}" fill="#b8c4d2"/>`;
-  }
-  const eEvtX=boxX(last)+BOXW+30, eEvtY=boxY(last)+BOXH/2;
-  wires+=`<line x1="${boxX(last)+BOXW}" y1="${eEvtY}" x2="${eEvtX}" y2="${eEvtY}" stroke="#94a3b8" stroke-width="1.5"/>`;
-  wires+=`</svg>`;
-  html+=wires;
-  // start/end events
-  html+=`<div class="evt" style="left:${sEvtX-13}px;top:${sEvtY-13}px"></div>`;
-  html+=`<div class="evt end" style="left:${eEvtX}px;top:${eEvtY-13}px"></div>`;
-  // nodes + markers
-  S.forEach(s=>{
-    const x=boxX(s), y=boxY(s);
-    const dim = !passFilter(s);
-    if(s.kind==="gateway"){
-      const gx=x+(BOXW-34)/2, gy=y+(BOXH-34)/2;
-      html+=`<div class="gw ${dim?'dim':''}" data-id="${s.id}" style="left:${gx}px;top:${gy}px"></div>`;
-      html+=`<div class="gw-cap" style="left:${x}px;top:${y+BOXH+2}px;width:${BOXW}px">${s.name}</div>`;
-    } else {
-      const timer = s.timer?`<div class="timer" title="${s.timer}"><span>${s.timer}</span></div>`:"";
-      html+=`<div class="node ${dim?'dim':''}" data-id="${s.id}" style="left:${x}px;top:${y}px;width:${BOXW}px;min-height:${BOXH}px">${timer}<span class="nm">${s.name}</span><span class="sy">${s.sys}</span></div>`;
-    }
-    // marker at top-right of box
-    const mx=x+BOXW-6, my=y+2;
-    if(state.mode==="current"){
-      html+=`<div class="marker ${s.gap?'gapmark':''} ${dim?'dim':''}" data-id="${s.id}" style="left:${mx}px;top:${my}px"><span class="dot" style="background:${WF[s.wf].color}"></span></div>`;
-    } else {
-      const star = s.ap>=70?" ★":"";
-      const closed = s.gap&&s.fix?"closed":"";
-      html+=`<div class="marker pill ${closed} ${dim?'dim':''}" data-id="${s.id}" style="left:${mx}px;top:${my}px"><span class="pillbox" style="background:${WF[s.wf].color}">${s.ap}%${star}</span></div>`;
-    }
-  });
-  html+=`</div>`;
-  wrap.innerHTML=html;
-  applyZoom();
-  wrap.querySelectorAll("[data-id]").forEach(el=>{
-    const s=RAW.find(x=>x.id===el.dataset.id);
-    el.addEventListener("mouseenter",ev=>{ if(!state.pinned) showPop(s,ev.currentTarget); });
-    el.addEventListener("mouseleave",()=>{ if(!state.pinned) hidePop(); });
-    el.addEventListener("click",ev=>{ ev.stopPropagation(); pinPop(s,ev.currentTarget); });
-  });
-}
-
-/* ---------- LIST ---------- */
-const COLS=[["name","Step"],["role","Role"],["wf","Workforce"],["ap","Auto %"],["value","Value"],["effort","Effort"],["wave","Wave"],["conf","Confidence"]];
-function renderList(){
-  const thead=document.querySelector("#listTable thead"); const tbody=document.querySelector("#listTable tbody");
-  thead.innerHTML="<tr>"+COLS.map(c=>{
-    const arr=state.sort.key===c[0]?(state.sort.dir>0?" ▲":" ▼"):"";
-    return `<th data-k="${c[0]}">${c[1]}<span class="arr">${arr}</span></th>`;
-  }).join("")+"</tr>";
-  thead.querySelectorAll("th").forEach(th=>th.onclick=()=>{
-    const k=th.dataset.k;
-    if(state.sort.key===k) state.sort.dir*=-1; else state.sort={key:k,dir:1};
-    renderList();
-  });
-  const ord={High:3,Medium:2,Low:1,"—":0,H1:2,H2:1};
-  let S=stepsFor(state.proc).slice();
-  S.sort((a,b)=>{
-    let av=a[state.sort.key], bv=b[state.sort.key];
-    if(state.sort.key in {wf:1}){ av=WF[av].label; bv=WF[bv].label; }
-    if(av in ord) av=ord[av]; if(bv in ord) bv=ord[bv];
-    if(typeof av==="string") return av.localeCompare(bv)*state.sort.dir;
-    return (av-bv)*state.sort.dir;
-  });
-  tbody.innerHTML=S.map(s=>{
-    const dim=!passFilter(s)?"dim":"";
-    const tv=v=>`<span class="tag ${v==='High'?'hi':v==='Medium'?'md':'lo'}">${v}</span>`;
-    return `<tr class="${dim}" data-id="${s.id}">
-      <td>${s.name}</td><td>${s.role}</td>
-      <td><span class="pill" style="background:${WF[s.wf].color}">${WF[s.wf].label}</span></td>
-      <td><span class="apbar"><span class="track"><span class="fill" style="width:${s.ap}%;background:${apColor(s.ap)}"></span></span>${s.ap}%</span></td>
-      <td>${tv(s.value)}</td><td>${tv(s.effort==='—'?'Low':s.effort)}</td><td><span class="tag">${s.wave}</span></td><td>${tv(s.conf)}</td>
-    </tr>`;
-  }).join("");
-  tbody.querySelectorAll("tr").forEach(tr=>{
-    const s=RAW.find(x=>x.id===tr.dataset.id);
-    tr.onclick=ev=>{ ev.stopPropagation(); pinPop(s,tr); };
-  });
-}
-
-/* ---------- MATRIX ---------- */
-function renderMatrix(){
-  const host=document.getElementById("matrixHost");
-  const vals=["High","Medium","Low"], effs=["Low","Medium","High"];
-  const S=stepsFor(state.proc);
-  let html=`<table class="mtable"><tr><td></td>`+effs.map(e=>`<th>Effort: ${e}</th>`).join("")+`</tr>`;
-  vals.forEach(v=>{
-    html+=`<tr><th class="axis-y">Value: ${v}</th>`;
-    effs.forEach(e=>{
-      const qw = v==="High"&&e==="Low";
-      const cell=S.filter(s=>s.value===v && (s.effort==='—'?'Low':s.effort)===e);
-      const chips=cell.map(s=>`<span class="cchip ${!passFilter(s)?'dim':''}" data-id="${s.id}" style="background:${WF[s.wf].color}" title="${s.name}">${s.name}</span>`).join("");
-      html+=`<td class="cell ${qw?'qw':''}">${qw?'<div class="cl">Quick wins</div>':''}${chips||'<span style="color:#b8c4d2;font-size:11px">—</span>'}</td>`;
-    });
-    html+=`</tr>`;
-  });
-  html+=`</table>`;
-  host.innerHTML=html;
-  host.querySelectorAll("[data-id]").forEach(el=>{
-    const s=RAW.find(x=>x.id===el.dataset.id);
-    el.addEventListener("mouseenter",ev=>{ if(!state.pinned) showPop(s,ev.currentTarget); });
-    el.addEventListener("mouseleave",()=>{ if(!state.pinned) hidePop(); });
-    el.addEventListener("click",ev=>{ ev.stopPropagation(); pinPop(s,ev.currentTarget); });
-  });
-}
-
-/* ---------- BY ROLE ---------- */
-function renderRoles(){
-  const host=document.getElementById("rolesHost");
-  const S=stepsFor(state.proc);
-  const roles=[...new Set(S.map(s=>s.role))];
-  host.innerHTML=roles.map(r=>{
-    const rs=S.filter(s=>s.role===r);
-    const avg=Math.round(rs.reduce((a,s)=>a+s.ap,0)/rs.length);
-    const qw=rs.filter(s=>s.wave==="H1").length;
-    const mix=WF_ORDER.map(k=>{ const n=rs.filter(s=>s.wf===k).length; return n?`<span style="flex:${n};background:${WF[k].color}" title="${WF[k].label}: ${n}"></span>`:""; }).join("");
-    return `<div class="rcard">
-      <h4>${r}</h4>
-      <div class="rstat">
-        <div><div class="n">${rs.length}</div><div class="t">steps</div></div>
-        <div><div class="n">${avg}%</div><div class="t">avg auto</div></div>
-        <div><div class="n">${qw}</div><div class="t">quick wins</div></div>
-      </div>
-      <div class="mix">${mix}</div>
-    </div>`;
-  }).join("");
-}
-
-/* ---------- POPOVER ---------- */
-const pop=document.getElementById("pop"), popBody=document.getElementById("popBody");
-document.getElementById("popClose").onclick=()=>hidePop(true);
-document.addEventListener("click",e=>{ if(state.pinned && !pop.contains(e.target)) hidePop(true); });
-window.addEventListener("resize",()=>hidePop(true));
-
-function popHTML(s){
-  const b=(lbl,val,col)=>`<span class="b" style="background:${col}">${lbl} ${val}</span>`;
-  const badges=[
-    b("Auto",s.ap+"%",apColor(s.ap)),
-    b("Value",s.value,"#0a2540"),
-    b("Effort",(s.effort==='—'?'—':s.effort),"#475569"),
-    b("Wave",s.wave,"#12345c"),
-    b("Conf.",s.conf,"#5b6b7c")
-  ].join("");
-  let ctrl="";
-  if(s.gap){
-    ctrl=`<section><div class="st">Control</div>
-      <div class="ctrl"><div class="row"><b>Today</b><span>${s.risk}</span></div></div>
-      ${s.fix?`<div class="ctrl ok" style="margin-top:6px"><div class="row"><b>Improved</b><span>${s.fix}</span></div></div>`:""}
-    </section>`;
-  }
-  return `<h3>${s.name}</h3>
-    <div class="badges">${badges}</div>
-    <div class="meta">${WF[s.wf].label} · ${s.role} · ${s.sys} · currently ${s.now}${s.timer?" · "+s.timer:""}</div>
-    <section><div class="st">Recommendation</div><div class="sc">${s.imp}</div></section>
-    <div class="two">
-      <section><div class="st">How</div><div class="sc">${s.tech}</div></section>
-      <section><div class="st">Prerequisites</div><div class="sc">${s.prereq}</div></section>
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="m-head">
+      <div class="m-kind" id="mKind"></div>
+      <div class="m-title" id="mTitle"></div>
+      <div class="m-blurb" id="mBlurb"></div>
+      <button class="m-close" id="mClose" aria-label="Close">&times;</button>
     </div>
-    ${toolSection(s)}
-    <section><div class="st">Expected impact</div><div class="sc">${s.impact}</div></section>
-    <section><div class="st">Skills shift</div><div class="sc">${s.skill}</div></section>
-    ${ctrl}`;
-}
-function placePop(anchor){
-  const r=anchor.getBoundingClientRect();
-  pop.style.display="block";
-  const pw=pop.offsetWidth, ph=pop.offsetHeight, vw=innerWidth, vh=innerHeight, gap=10;
-  let left=r.right+gap;
-  if(left+pw>vw-8) left=r.left-gap-pw;      // flip left
-  if(left<8) left=Math.max(8,(vw-pw)/2);    // clamp
-  let top=r.top;
-  if(top+ph>vh-8) top=vh-8-ph;              // clamp bottom
-  if(top<8) top=8;                          // clamp top
-  pop.style.left=left+"px"; pop.style.top=top+"px";
-}
-function showPop(s,anchor){ popBody.innerHTML=popHTML(s); document.getElementById("popClose").style.display=state.pinned?"block":"none"; placePop(anchor); }
-function pinPop(s,anchor){ state.pinned=s.id; showPop(s,anchor); document.getElementById("popClose").style.display="block"; }
-function hidePop(force){ if(force) state.pinned=null; if(!state.pinned){ pop.style.display="none"; } }
+    <div class="m-body">
+      <div id="mFields"></div>
+      <div class="m-run">
+        <button class="runbtn" id="mRun"></button>
+        <button class="resetlink" id="mReset">Reset to demo</button>
+      </div>
+      <div class="demo-note">Runs a real AI model on the inputs above. Inputs are pre-filled with synthetic demo data — edit them and re-run.</div>
+      <div class="errbox" id="mErr"></div>
+      <div class="m-out" id="mOut">
+        <div class="out-head"><span>AI output</span><span id="mModel"></span></div>
+        <div class="out-body" id="mOutBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-/* ---------- render orchestration ---------- */
-function renderAll(){
-  renderKpis(); renderLegend();
-  if(state.view==="map") renderMap();
-  else if(state.view==="list") renderList();
-  else if(state.view==="matrix") renderMatrix();
-  else renderRoles();
+<script type="module">
+import { PROCS, WF, WF_ORDER, STEPS } from "./shared/data.js";
+import { getToolUI } from "./shared/tools.js";
+
+const esc = (s) => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const apColor = (v) => v>=70?"#16a34a":v>=45?"#f59e0b":"#94a3b8";
+const wfColor = (k) => (WF[k]&&WF[k].color)||"#64748b";
+const wfLabel = (k) => (WF[k]&&WF[k].label)||k;
+
+let proc = "req", mode = "current", sel = null;
+
+const labelW=30, colW=178, nodeW=142, nodeH=60, laneH=110, topPad=10, startGap=72;
+const col0X=labelW+18+startGap;
+const nodeX=(c)=>col0X+c*colW;
+const nodeY=(l)=>topPad+l*laneH+(laneH-nodeH)/2;
+
+function procSteps(p){ return STEPS.filter(s=>s.process===p).sort((a,b)=>a.col-b.col); }
+
+function buildTabs(){
+  const t=document.getElementById("tabs"); t.innerHTML="";
+  Object.keys(PROCS).forEach(p=>{
+    const b=document.createElement("button");
+    b.textContent=PROCS[p].name; b.className=p===proc?"active":"";
+    b.onclick=()=>{ proc=p; sel=null; buildTabs(); build();
+      const dr=document.getElementById("drawer"); dr.className="drawer empty";
+      dr.textContent="Select a step to see its improvement, skills shift, control impact — and open its AI tool."; };
+    t.appendChild(b);
+  });
 }
-document.getElementById("zoomBox").style.display="inline-flex";
-renderAll();
+
+function buildLegend(){
+  const L=document.getElementById("legend");
+  const short={ "RPA / Automation":"RPA", "Generative AI":"Gen AI", "Augmented Human":"Augmented", "Agentic AI":"Agentic" };
+  L.innerHTML='<span style="font-weight:700;color:var(--ink)">Target workforce:</span>'+
+    WF_ORDER.map(k=>`<span class="grp"><span class="dot" style="background:${wfColor(k)}"></span>${esc(short[wfLabel(k)]||wfLabel(k))}</span>`).join("");
+}
+
+function build(){
+  document.getElementById("ptitle").textContent=PROCS[proc].name;
+  const lanes=PROCS[proc].lanes, steps=procSteps(proc);
+  const maxCol=Math.max(...steps.map(s=>s.col));
+  const ex=nodeX(maxCol)+nodeW+40;
+  const totalW=ex+152, totalH=topPad+lanes.length*laneH+4;
+  const cv=document.getElementById("canvas");
+  cv.innerHTML=""; cv.style.width=totalW+"px"; cv.style.height=totalH+"px";
+
+  lanes.forEach((L,i)=>{
+    const ln=document.createElement("div");
+    ln.className="lane"+(i%2?" alt":"");
+    ln.style.top=(topPad+i*laneH)+"px"; ln.style.height=laneH+"px"; ln.style.width=totalW+"px";
+    ln.innerHTML=`<div class="lanelabel"><span>${esc(L)}</span></div>`;
+    cv.appendChild(ln);
+  });
+
+  const svg=document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("class","conn"); svg.setAttribute("width",totalW); svg.setAttribute("height",totalH);
+  svg.innerHTML=`<defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+    <path d="M0,0 L8,3.2 L0,6.4 Z" fill="#6b7a8d"/></marker></defs>`;
+  cv.appendChild(svg);
+
+  const first=steps[0], last=steps[steps.length-1];
+  addEvent(cv, labelW+20, nodeY(first.lane)+nodeH/2-16, "Start", false);
+  addEvent(cv, ex, nodeY(last.lane)+nodeH/2-16, "End", true);
+
+  drawConn(svg, labelW+20+32, nodeY(first.lane)+nodeH/2, nodeX(first.col), nodeY(first.lane)+nodeH/2);
+  for(let i=0;i<steps.length-1;i++){
+    const a=steps[i], b=steps[i+1];
+    drawConn(svg, nodeX(a.col)+nodeW, nodeY(a.lane)+nodeH/2, nodeX(b.col), nodeY(b.lane)+nodeH/2);
+  }
+  drawConn(svg, nodeX(last.col)+nodeW, nodeY(last.lane)+nodeH/2, ex-2, nodeY(last.lane)+nodeH/2);
+
+  steps.forEach(s=>{
+    const d=document.createElement("div");
+    d.className="node"; d.dataset.id=s.id;
+    d.style.left=nodeX(s.col)+"px"; d.style.top=nodeY(s.lane)+"px";
+    d.style.width=nodeW+"px"; d.style.minHeight=nodeH+"px";
+    d.title=s.name+" — "+s.role;
+    const timer=s.timer?` <span style="color:#8a5a00">⏱ ${esc(s.timer)}</span>`:"";
+    d.innerHTML=`<div class="nn">${esc(s.name)}</div><div class="nsys">${esc(s.sys)}${timer}</div>
+      <div class="corner"></div><div class="apbadge"></div><div class="autotag">★ AUTO</div><div class="toolmark">▸</div>`;
+    d.onclick=()=>selectNode(s.id);
+    cv.appendChild(d);
+  });
+  applyMode();
+}
+function addEvent(cv,x,y,label,end){
+  const e=document.createElement("div"); e.className="event"; e.style.left=x+"px"; e.style.top=y+"px";
+  e.innerHTML=`<div class="circ ${end?"end":""}"></div><div class="lbl">${esc(label)}</div>`;
+  cv.appendChild(e);
+}
+function drawConn(svg,ax,ay,bx,by){
+  const midx=(ax+bx)/2;
+  const p=document.createElementNS("http://www.w3.org/2000/svg","path");
+  p.setAttribute("d",`M ${ax} ${ay} H ${midx} V ${by} H ${bx}`);
+  p.setAttribute("fill","none"); p.setAttribute("stroke","#6b7a8d"); p.setAttribute("stroke-width","1.6");
+  p.setAttribute("marker-end","url(#ar)");
+  svg.appendChild(p);
+}
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+
+function applyMode(){
+  const imp=mode==="improved";
+  document.getElementById("legend").style.display=imp?"flex":"none";
+  document.querySelectorAll(".node").forEach(d=>{
+    const s=STEPS.find(x=>x.id===d.dataset.id);
+    const corner=d.querySelector(".corner"), badge=d.querySelector(".apbadge"),
+          auto=d.querySelector(".autotag"), tm=d.querySelector(".toolmark");
+    const hasTool=!!getToolUI(s.id);
+    if(!imp){
+      d.style.background="var(--bpmn)"; d.style.borderColor="var(--bpmnb)"; d.style.borderLeftWidth="1.5px";
+      badge.style.display="none"; auto.style.display="none"; tm.style.display="none";
+      if(s.gap){corner.style.display="flex"; corner.style.background="var(--risk)"; corner.textContent="!";}
+      else corner.style.display="none";
+    }else{
+      const c=wfColor(s.wf);
+      d.style.background=hexA(c,.12); d.style.borderColor=c; d.style.borderLeftWidth="5px";
+      badge.style.display="block"; badge.style.background=apColor(s.ap); badge.textContent=s.ap+"%";
+      auto.style.display=s.ap>=70?"block":"none";
+      tm.style.display=hasTool?"flex":"none";
+      if(s.gap){corner.style.display="flex"; corner.style.background=s.fix?"#16a34a":"var(--risk)"; corner.textContent=s.fix?"✓":"!";}
+      else corner.style.display="none";
+    }
+  });
+  renderKPIs();
+}
+function renderKPIs(){
+  const steps=procSteps(proc), total=steps.length;
+  const auto=steps.filter(s=>s.ap>=70).length;
+  const human=steps.filter(s=>s.wf==="Human"||s.wf==="Aug").length;
+  const gaps=steps.filter(s=>s.gap).length;
+  const K=document.getElementById("kpis"); K.innerHTML="";
+  let cards;
+  if(mode==="current"){
+    cards=[
+      {n:total,l:"Steps, all manual / hybrid"},
+      {n:"0",l:"Steps automated"},
+      {n:gaps,l:"Open control gaps",cls:"warn"},
+      {n:"0%",l:"Effort freed"}
+    ];
+  }else{
+    cards=[
+      {n:auto+"/"+total,l:"Steps automatable",cls:"good",d:"+"+auto},
+      {n:human,l:"Human touchpoints kept",d:"focused on judgement"},
+      {n:"0",l:"Open control gaps",cls:"good",d:"−"+gaps+" closed"},
+      {n:PROCS[proc].freed,l:"Directional effort freed",cls:"good"}
+    ];
+  }
+  cards.forEach(c=>{
+    const el=document.createElement("div"); el.className="kpi";
+    el.innerHTML=`<div class="num ${c.cls||""}">${c.n}</div><div class="lab">${c.l}</div>
+      ${c.d?`<div class="delta" style="color:${c.cls==="good"?"#16a34a":"#5b6b7b"}">${esc(c.d)}</div>`:""}`;
+    K.appendChild(el);
+  });
+}
+
+function selectNode(id){
+  sel=id;
+  document.querySelectorAll(".node").forEach(d=>d.classList.toggle("sel",d.dataset.id===id));
+  const s=STEPS.find(x=>x.id===id), dr=document.getElementById("drawer");
+  dr.classList.remove("empty");
+  const controlHtml = s.gap ?
+    `<div class="block"><h5>Control</h5>
+      <p class="risk-open">Today: ${esc(s.risk||"Risk with no control in place.")}</p>
+      ${s.fix?`<p class="risk-closed">With improvement: ${esc(s.fix)}</p>`:""}</div>` : "";
+  const tool=getToolUI(s.id);
+  const actions = tool
+    ? `<button class="toolbtn" id="openTool">▸ Open AI tool — ${esc(tool.kindLabel)}</button>`
+    : `<span class="notool">Human judgement — no tool</span>`;
+  dr.innerHTML=`
+    <div class="dr-head">
+      <div class="dr-title">${esc(s.name)}</div>
+      <span class="tag" style="background:${wfColor(s.wf)}">${esc(wfLabel(s.wf))}</span>
+    </div>
+    <div class="dr-grid">
+      <div class="cell"><div class="l">Role / lane</div><div class="v">${esc(s.role)}</div></div>
+      <div class="cell"><div class="l">System</div><div class="v">${esc(s.sys)}</div></div>
+      <div class="cell"><div class="l">State today</div><div class="v">${esc(s.now)}</div></div>
+      <div class="cell"><div class="l">Automation potential</div><div class="v" style="color:${apColor(s.ap)}">${s.ap}%</div></div>
+    </div>
+    <div class="block"><h5>Improvement</h5><p class="imp">${esc(s.imp||"")}</p></div>
+    ${s.skill?`<div class="block"><h5>Skills shift</h5><p>${esc(s.skill)}</p></div>`:""}
+    ${s.impact?`<div class="block"><h5>Expected impact</h5><p>${esc(s.impact)}</p></div>`:""}
+    ${controlHtml}
+    <div class="dr-actions">${actions}</div>`;
+  const bt=document.getElementById("openTool");
+  if(bt) bt.onclick=()=>openTool(s.id);
+}
+
+let curTool=null;
+function openTool(id){
+  const t=getToolUI(id); if(!t) return;
+  curTool=t;
+  document.getElementById("mKind").textContent=t.kindLabel;
+  document.getElementById("mTitle").textContent=t.title;
+  document.getElementById("mBlurb").textContent=t.blurb;
+  document.getElementById("mRun").textContent=t.run;
+  fillFields(t);
+  document.getElementById("mErr").className="errbox";
+  document.getElementById("mOut").className="m-out";
+  document.getElementById("overlay").classList.add("on");
+}
+function fillFields(t){
+  const F=document.getElementById("mFields"); F.innerHTML="";
+  t.inputs.forEach(inp=>{
+    const val=inp.demo||"";
+    const f=document.createElement("div"); f.className="fld";
+    const ctl = inp.type==="textarea"
+      ? `<textarea id="in_${esc(inp.id)}">${esc(val)}</textarea>`
+      : `<input type="text" id="in_${esc(inp.id)}" value="${esc(val)}">`;
+    f.innerHTML=`<label for="in_${esc(inp.id)}">${esc(inp.label)}</label>${ctl}`;
+    F.appendChild(f);
+  });
+}
+function closeModal(){ document.getElementById("overlay").classList.remove("on"); }
+async function runTool(){
+  if(!curTool) return;
+  const inputs={};
+  curTool.inputs.forEach(inp=>{ const el=document.getElementById("in_"+inp.id); inputs[inp.id]=el?el.value:""; });
+  const runBtn=document.getElementById("mRun"), err=document.getElementById("mErr"),
+        out=document.getElementById("mOut"), body=document.getElementById("mOutBody");
+  err.className="errbox"; runBtn.disabled=true;
+  const prev=runBtn.textContent; runBtn.innerHTML=`<span class="spin"></span>Running…`;
+  out.className="m-out on"; body.innerHTML='<p style="color:#5b6b7b">Working…</p>';
+  document.getElementById("mModel").textContent="";
+  try{
+    const r=await fetch("/api/tool",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({id:curTool.id, inputs})});
+    const data=await r.json();
+    if(!r.ok){ throw new Error(data.error||("HTTP "+r.status)); }
+    body.innerHTML=mdToHtml(data.output||"(no output)");
+    document.getElementById("mModel").textContent=data.model?("model: "+data.model):"";
+  }catch(e){
+    out.className="m-out"; err.textContent="Could not run the tool: "+e.message; err.className="errbox on";
+  }finally{
+    runBtn.disabled=false; runBtn.textContent=prev;
+  }
+}
+
+function mdInline(s){
+  return esc(s)
+    .replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>")
+    .replace(/(^|[^*])\*([^*]+)\*(?!\*)/g,"$1<i>$2</i>")
+    .replace(/`([^`]+)`/g,"<code>$1</code>");
+}
+function mdToHtml(md){
+  const lines=String(md).replace(/\r/g,"").split("\n");
+  let html="", i=0, inList=false;
+  const closeList=()=>{ if(inList){html+="</ul>"; inList=false;} };
+  while(i<lines.length){
+    let ln=lines[i];
+    if(/\|/.test(ln) && i+1<lines.length && /^\s*\|?[\s:|-]+\|?\s*$/.test(lines[i+1]) && /-/.test(lines[i+1])){
+      closeList();
+      const cells=(row)=>row.split("|").map(c=>c.trim()).filter((c,idx,a)=>!(idx===0&&c==="")&&!(idx===a.length-1&&c===""));
+      const head=cells(ln); i+=2; let rows=[];
+      while(i<lines.length && /\|/.test(lines[i])){ rows.push(cells(lines[i])); i++; }
+      html+="<table><thead><tr>"+head.map(h=>`<th>${mdInline(h)}</th>`).join("")+"</tr></thead><tbody>"+
+        rows.map(r=>"<tr>"+r.map(c=>`<td>${mdInline(c)}</td>`).join("")+"</tr>").join("")+"</tbody></table>";
+      continue;
+    }
+    const h=ln.match(/^\s*(#{1,4})\s+(.*)$/);
+    if(h){ closeList(); html+=`<h4>${mdInline(h[2])}</h4>`; i++; continue; }
+    const li=ln.match(/^\s*[-*•]\s+(.*)$/);
+    if(li){ if(!inList){html+="<ul>"; inList=true;} html+=`<li>${mdInline(li[1])}</li>`; i++; continue; }
+    if(ln.trim()===""){ closeList(); i++; continue; }
+    closeList(); html+=`<p>${mdInline(ln)}</p>`; i++;
+  }
+  closeList(); return html;
+}
+
+document.querySelectorAll("#seg button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#seg button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); mode=b.dataset.m; applyMode();
+    if(sel) selectNode(sel);
+  };
+});
+document.getElementById("mClose").onclick=closeModal;
+document.getElementById("mRun").onclick=runTool;
+document.getElementById("mReset").onclick=()=>{ if(curTool){ fillFields(curTool);
+  document.getElementById("mOut").className="m-out"; document.getElementById("mErr").className="errbox"; } };
+document.getElementById("overlay").onclick=(e)=>{ if(e.target.id==="overlay") closeModal(); };
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
+
+buildTabs(); buildLegend(); build();
 </script>
 </body>
 </html>
