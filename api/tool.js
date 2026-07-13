@@ -10,10 +10,10 @@ export default async function handler(req, res) {
   try {
     let body = req.body;
     if (typeof body === "string") { try { body = JSON.parse(body); } catch { body = {}; } }
-    const { id, inputs } = body || {};
+    const { id, inputs, extra } = body || {};
     if (!id) { res.status(400).json({ error: "Missing step id" }); return; }
 
-    const spec = buildMessages(id, inputs);
+    const spec = buildMessages(id, inputs, extra);
     if (!spec) { res.status(400).json({ error: "This step is human judgement — no tool." }); return; }
 
     const key = process.env.OPENAI_API_KEY;

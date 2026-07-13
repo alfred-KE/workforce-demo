@@ -107,7 +107,7 @@ export function kindFor(s) {
   if (/generate contract|contract summary|create vacancy|vacancy advert|create .*text|\bdraft\b|learning plan|one[- ]?pager/.test(t)) return "draft";
   if (/process feedback|merge feedback|correct data/.test(t)) return "refine";
   if (/duplicate|rehire|\bmatch\b|eligib|country/.test(t)) return "classify";
-  if (/register error|\bextract\b|\bexport\b|employee query|which employees|new[- ]hire data|expiring|overview|complete .*checklist|validate mutations/.test(t)) return "extract";
+  if (/register error|\bextract\b|\bexport\b|employee query|which employees|new[- ]hire data|expiring|create .*overview|complete .*checklist|validate mutations/.test(t)) return "extract";
   if (/schedul|intake meeting|plan (medical|introductory|general|vacancy)|preliminary planning|plan .*training/.test(t)) return "schedule";
   if (/\bcheck\b|verif|control|posted|posting/.test(t)) return "qa";
   if (/\bsend\b|inform|notify|\bshare\b|announce|stakeholders|\bemail\b/.test(t)) return "notify";
@@ -223,7 +223,7 @@ export function getToolUI(id) {
 }
 
 // server-facing: build the provider request for a step
-export function buildMessages(id, inputs) {
+export function buildMessages(id, inputs, extra) {
   const s = stepById[id];
   if (!s) return null;
   const t = deriveTool(s);
@@ -239,6 +239,9 @@ export function buildMessages(id, inputs) {
   for (const inp of t.inputs) {
     const raw = inputs && inputs[inp.id] != null ? String(inputs[inp.id]) : "";
     lines.push(`- ${inp.label}: ${raw.slice(0, 4000) || "(empty)"}`);
+  }
+  if (extra && String(extra).trim()) {
+    lines.push("", "Additional instruction: " + String(extra).slice(0, 1200));
   }
   return {
     model: t.model,

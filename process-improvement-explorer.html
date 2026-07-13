@@ -366,7 +366,7 @@ function selectNode(id){
       ${s.fix?`<p class="risk-closed">With improvement: ${esc(s.fix)}</p>`:""}</div>` : "";
   const tool=getToolUI(s.id);
   const actions = tool
-    ? `<button class="toolbtn" id="openTool">▸ Open AI tool — ${esc(tool.kindLabel)}</button>`
+    ? `<button class="toolbtn" id="openTool">▸ Open AI app — ${esc(tool.kindLabel)}</button>`
     : `<span class="notool">Human judgement — no tool</span>`;
   dr.innerHTML=`
     <div class="dr-head">
@@ -385,7 +385,7 @@ function selectNode(id){
     ${controlHtml}
     <div class="dr-actions">${actions}</div>`;
   const bt=document.getElementById("openTool");
-  if(bt) bt.onclick=()=>openTool(s.id);
+  if(bt) bt.onclick=()=>window.open("tool.html?id="+encodeURIComponent(s.id),"_blank");
 }
 
 let curTool=null;

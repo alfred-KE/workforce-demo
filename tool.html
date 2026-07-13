@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Tool — Northwind Retail</title>
+<style>
+  :root{
+    --navy:#0a2540; --navy2:#12345c; --ink:#1b2733; --muted:#5b6b7b;
+    --line:#e3e9f0; --bg:#f5f7fa; --card:#ffffff;
+    --agentic:#7c3aed; --rpa:#0ea5e9; --gen:#f59e0b; --aug:#0d9488; --human:#475569;
+    --hi:#16a34a; --med:#f59e0b; --lo:#94a3b8; --risk:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5;font-size:14px}
+  a{color:var(--agentic)}
+  /* app bar */
+  .appbar{background:linear-gradient(120deg,var(--navy),var(--navy2));color:#fff;padding:14px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .appbar .back{color:#cfe0f2;text-decoration:none;font-weight:700;font-size:13px;white-space:nowrap}
+  .appbar .back:hover{color:#fff}
+  .appbar .sep{opacity:.4}
+  .appbar .crumb{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#9ec1e6;font-weight:700}
+  .appbar .title{font-size:16px;font-weight:800}
+  .appbar .kind{font-size:11px;font-weight:800;color:#8fd0ff;text-transform:uppercase;letter-spacing:.04em}
+  .appbar .grow{flex:1}
+  .wftag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;color:#fff}
+  .badge{display:inline-block;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.28);color:#fff;
+    font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+  /* layout */
+  .toolwrap{max-width:1140px;margin:0 auto;padding:22px 22px 70px}
+  .intro{color:var(--muted);font-size:13.5px;margin:2px 0 18px;max-width:820px}
+  .grid2{display:grid;grid-template-columns:390px 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+  .pane{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 18px}
+  .pane>h3{margin:0 0 3px;font-size:14px;font-weight:800;color:var(--navy)}
+  .pane>.psub{margin:0 0 14px;font-size:12px;color:var(--muted)}
+  .sticky{position:sticky;top:16px}
+  /* forms */
+  .field{margin-bottom:13px}
+  .field>label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:5px}
+  .field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13px;
+    font-family:inherit;color:var(--ink);background:#fcfdff;resize:vertical}
+  .field textarea{min-height:92px}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--agentic);background:#fff}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .row.tight{gap:6px}
+  .col{display:flex;flex-direction:column;gap:4px}
+  /* buttons */
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:700;font-size:13px;padding:10px 16px;border-radius:9px;
+    cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{border-color:#c3d0de}
+  .btn.primary{background:var(--agentic);border-color:var(--agentic);color:#fff}
+  .btn.primary:hover{background:#6d28d9}
+  .btn.ghost{background:transparent}
+  .btn.small{padding:6px 11px;font-size:12px}
+  .btn.icon{padding:7px 9px}
+  .btn:disabled{opacity:.55;cursor:default}
+  .linkbtn{background:none;border:none;color:var(--muted);text-decoration:underline;font-size:12px;cursor:pointer;padding:0}
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.12s}
+  .chip.on{background:var(--agentic);border-color:var(--agentic);color:#fff}
+  .chip:hover:not(.on){border-color:#c3d0de}
+  /* result */
+  .result{border:1px solid var(--line);border-radius:11px;background:#fafcff;padding:16px 18px;min-height:120px}
+  .result.empty{color:var(--muted);display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;min-height:200px}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .toolbar .grow{flex:1}
+  .out-body h4{margin:12px 0 5px;font-size:14px;color:var(--navy)} .out-body p{margin:0 0 9px}
+  .out-body ul{margin:5px 0 11px 18px;padding:0} .out-body li{margin:3px 0}
+  .out-body code{background:#eef2f7;padding:1px 5px;border-radius:4px;font-size:12px}
+  .out-body table,table.data{border-collapse:collapse;width:100%;font-size:12.5px;margin:6px 0}
+  .out-body th,.out-body td,table.data th,table.data td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+  .out-body th,table.data th{background:#f0f4f9;font-weight:800}
+  table.data td[contenteditable]{background:#fff} table.data td[contenteditable]:focus{outline:2px solid rgba(124,58,237,.35)}
+  .cardgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .minicard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+  .minicard h5{margin:0 0 6px;font-size:12.5px;color:var(--navy);display:flex;justify-content:space-between;align-items:center}
+  /* verdicts / severity */
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13px;padding:8px 14px;border-radius:9px}
+  .verdict.pass{background:#e7f6ec;color:#166534} .verdict.fail{background:#fdeaea;color:#991b1b} .verdict.warn{background:#fef6e7;color:#8a5a00}
+  .sev{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  .sev.high{background:var(--risk)} .sev.med{background:var(--med)} .sev.low{background:var(--lo)}
+  .check{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .check .mk{font-weight:800;flex:0 0 auto} .check .ok{color:var(--hi)} .check .no{color:var(--risk)}
+  /* console / agent log */
+  .console{background:#0d1b2a;color:#d6e2f0;border-radius:11px;padding:14px 16px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.7}
+  .logline{opacity:0;transform:translateY(4px);transition:.3s;display:flex;gap:9px}
+  .logline.on{opacity:1;transform:none}
+  .logline .n{color:#7c9bbd;flex:0 0 auto} .logline .tick{color:#4ade80}
+  .statusbar{margin-top:12px;font-weight:800;font-size:13px;padding:9px 13px;border-radius:9px;background:#e7f6ec;color:#166534}
+  /* stats */
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:96px}
+  .stat .n{font-size:20px;font-weight:800;color:var(--navy)} .stat .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-top:3px}
+  /* misc */
+  .muted{color:var(--muted)} .mono{font-family:"SF Mono",Menlo,Consolas,monospace}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+  .btn:not(.primary) .spin{border-color:#cbd5e1;border-top-color:var(--agentic)}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .errbox{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:9px;padding:11px 14px;font-size:12.5px;margin-top:12px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;
+    padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:100}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .editable{border:1px solid var(--line);border-radius:9px;padding:12px 14px;background:#fff;font-size:13px;min-height:80px}
+  .editable:focus{outline:none;border-color:var(--agentic)}
+  .footnote{margin-top:26px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="appbar">
+  <a class="back" href="process-improvement-explorer.html">&#10094; Explorer</a>
+  <span class="sep">·</span>
+  <div>
+    <div class="crumb" id="crumb">—</div>
+    <div class="title" id="title">Loading…</div>
+  </div>
+  <span class="grow"></span>
+  <span class="kind" id="kind"></span>
+  <span class="wftag" id="wftag" style="display:none"></span>
+  <span class="badge">Demo — illustrative data</span>
+</div>
+
+<div class="toolwrap">
+  <div class="intro" id="intro"></div>
+  <div id="mount"></div>
+  <div class="footnote">This is a working demo tool running a real AI model on <b>synthetic</b> data — no real company, person or system. Directional; prepared by NovelVision.</div>
+</div>
+
+<script type="module">
+import { PROCS, WF, stepById } from "./shared/data.js";
+import { getToolUI } from "./shared/tools.js";
+import { el, callTool, mdToHtml, spinner } from "./shared/apps/_common.js";
+
+const id = new URLSearchParams(location.search).get("id");
+const step = stepById[id];
+const mount = document.getElementById("mount");
+const wfColor = (k) => (WF[k] && WF[k].color) || "#64748b";
+const wfLabel = (k) => (WF[k] && WF[k].label) || k;
+
+if (!step) {
+  document.getElementById("title").textContent = "Unknown tool";
+  mount.innerHTML = '<div class="pane"><p class="muted">No step id in the URL. Open a tool from the <a href="process-improvement-explorer.html">Process Improvement Explorer</a>.</p></div>';
+} else {
+  const tool = getToolUI(id);
+  document.getElementById("crumb").textContent = PROCS[step.process].name;
+  document.getElementById("title").textContent = step.name;
+  const wt = document.getElementById("wftag");
+  wt.textContent = wfLabel(step.wf); wt.style.background = wfColor(step.wf); wt.style.display = "inline-block";
+  if (!tool) {
+    document.getElementById("kind").textContent = "Human step";
+    mount.innerHTML = '<div class="pane"><h3>Human judgement — no tool</h3><p class="muted">This step stays with a person: it needs trust, ethics or judgement that should not be automated. There is no AI tool for it by design.</p></div>';
+  } else {
+    document.getElementById("kind").textContent = tool.kindLabel;
+    document.getElementById("intro").textContent = tool.blurb;
+    const ctx = { step, tool, PROCS, WF };
+    try {
+      const mod = await import(`./shared/apps/${tool.kind}.js`);
+      if (mod && typeof mod.render === "function") mod.render(mount, ctx);
+      else generic(mount, ctx);
+    } catch (e) {
+      console.error("app load failed", e);
+      generic(mount, ctx);
+    }
+  }
+}
+
+// generic fallback app (used if a kind module is missing) — a functional form + rich output
+function generic(mount, ctx) {
+  const { tool } = ctx;
+  const controls = el("div", { class: "pane sticky" }, el("h3", {}, tool.kindLabel), el("p", { class: "psub" }, "Edit the inputs and run."));
+  const fields = {};
+  tool.inputs.forEach((inp) => {
+    const wrap = el("div", { class: "field" }, el("label", {}, inp.label));
+    const ctl = inp.type === "textarea" ? el("textarea", {}, inp.demo || "") : el("input", { type: "text", value: inp.demo || "" });
+    fields[inp.id] = ctl; wrap.append(ctl); controls.append(wrap);
+  });
+  const run = el("button", { class: "btn primary" }, tool.run);
+  const reset = el("button", { class: "linkbtn" }, "Reset to demo");
+  controls.append(el("div", { class: "row" }, run, reset));
+  const out = el("div", { class: "result empty" }, "Run the tool to see the AI output.");
+  reset.onclick = () => tool.inputs.forEach((inp) => (fields[inp.id].value = inp.demo || ""));
+  run.onclick = async () => {
+    const inputs = {}; tool.inputs.forEach((inp) => (inputs[inp.id] = fields[inp.id].value));
+    run.disabled = true; run.innerHTML = spinner() + " Running…";
+    out.className = "result"; out.innerHTML = '<p class="muted">Working…</p>';
+    try { const d = await callTool(tool.id, inputs); out.innerHTML = '<div class="out-body">' + mdToHtml(d.output) + "</div>"; }
+    catch (e) { out.className = "result"; out.innerHTML = '<div class="errbox">' + e.message + "</div>"; }
+    finally { run.disabled = false; run.textContent = tool.run; }
+  };
+  mount.append(el("div", { class: "grid2" }, controls, out));
+}
+</script>
+</body>
+</html>
