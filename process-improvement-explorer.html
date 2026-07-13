@@ -431,7 +431,6 @@ async function runTool(){
     const data=await r.json();
     if(!r.ok){ throw new Error(data.error||("HTTP "+r.status)); }
     body.innerHTML=mdToHtml(data.output||"(no output)");
-    document.getElementById("mModel").textContent=data.model?("model: "+data.model):"";
   }catch(e){
     out.className="m-out"; err.textContent="Could not run the tool: "+e.message; err.className="errbox on";
   }finally{
