@@ -139,6 +139,11 @@
   #pop .ctrl.ok{background:#f0fbf4;border-color:#c4e8d0}
   #pop .ctrl .row{display:flex;gap:8px;font-size:12px;margin-top:4px}
   #pop .ctrl .row b{min-width:52px;color:var(--muted);font-weight:600}
+  #pop .toolrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  #pop .toollink{display:inline-flex;align-items:center;gap:4px;background:#eef3fb;border:1px solid #d3e0f0;color:var(--navy);text-decoration:none;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px}
+  #pop .toollink:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+  #pop .toollink .ext{font-size:10px;opacity:.8}
+  #pop .toolrow .or{color:var(--muted);font-size:11px}
 
   footer{margin-top:22px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
   footer b{color:var(--navy)}
@@ -212,6 +217,58 @@ const WF = {
 };
 const WF_ORDER = ["Agentic","RPA","Gen","Aug","Human"];
 function apColor(ap){ return ap>=70?"#16a34a":ap>=45?"#f59e0b":"#94a3b8"; }
+
+/* ---------- enabling-tool catalog ---------- */
+/* Generic, off-the-shelf automation / AI vendors that could actually implement each step.
+   These are public product names (not client data). */
+const TOOLS = {
+  "Microsoft Power Automate":"https://www.microsoft.com/power-platform/products/power-automate",
+  "UiPath":"https://www.uipath.com",
+  "Zapier":"https://zapier.com",
+  "Make":"https://www.make.com",
+  "n8n":"https://n8n.io",
+  "Claude (Anthropic)":"https://claude.ai",
+  "Claude Agent SDK":"https://www.anthropic.com/claude",
+  "Microsoft Copilot Studio":"https://www.microsoft.com/microsoft-copilot/microsoft-copilot-studio",
+  "Microsoft 365 Copilot":"https://www.microsoft.com/microsoft-365/copilot",
+  "DocuSign":"https://www.docusign.com",
+  "Adobe Acrobat Sign":"https://www.adobe.com/sign",
+  "DeepL":"https://www.deepl.com",
+  "Calendly":"https://calendly.com"
+};
+/* Pick a real tool for a step: keyword rules on name/imp/tech first, then workforce fallback.
+   Human steps stay tool-free (checked first so e.g. "sign-off"/"discuss schedule" don't false-match). */
+function suggestTool(s){
+  if(s.wf==="Human") return null;                       // human judgement — no tool
+  const t=((s.name||"")+" "+(s.imp||"")+" "+(s.tech||"")).toLowerCase();
+  // tool-specific rules (any workforce)
+  if(/e-?sign|signature|\bsigning\b/.test(t) || (/\bsigned?\b/.test(t) && /contract/.test(t)))
+                                                             return {primary:"DocuSign", alt:"Adobe Acrobat Sign"};
+  if(/translat/.test(t))                                     return {primary:"DeepL", alt:"Claude (Anthropic)"};
+  if(/intake meeting|appointment|\bbooking\b|medical health check|scheduling with provider|schedule[^.]*train|train[^.]*schedul/.test(t))
+                                                             return {primary:"Microsoft Power Automate", alt:"Calendly"};
+  // content creation — only for content-oriented workforces (so routing/filing RPA isn't mislabelled)
+  if((s.wf==="Gen"||s.wf==="Aug") && /\bdraft|write|generat|document generation|one[- ]?pager|\bletter\b|assembl/.test(t))
+                                                             return {primary:"Claude (Anthropic)", alt:"Microsoft 365 Copilot"};
+  // workforce fallback
+  switch(s.wf){
+    case "Gen":     return {primary:"Claude (Anthropic)", alt:"Microsoft 365 Copilot"};
+    case "Agentic": return {primary:"Claude Agent SDK", alt:"Microsoft Copilot Studio"};
+    case "RPA":     return {primary:"Microsoft Power Automate", alt:"UiPath"};
+    case "Aug":     return {primary:"Microsoft 365 Copilot", alt:"Claude (Anthropic)"};
+  }
+  return null;
+}
+function toolChip(name){
+  const url=TOOLS[name]; if(!url) return "";
+  return `<a class="toollink" href="${url}" target="_blank" rel="noopener noreferrer">${name} <span class="ext">↗</span></a>`;
+}
+function toolSection(s){
+  const t=suggestTool(s);
+  if(!t) return `<section><div class="st">Enabling tool</div><div class="sc" style="color:var(--muted)">Human judgement — no tool</div></section>`;
+  const altHtml = t.alt && t.alt!==t.primary ? `<span class="or">or</span>${toolChip(t.alt)}` : "";
+  return `<section><div class="st">Enabling tool</div><div class="sc toolrow">${toolChip(t.primary)}${altHtml}</div></section>`;
+}
 
 /* ---------- process metadata ---------- */
 const PROCS = {
@@ -622,6 +679,7 @@ function popHTML(s){
       <section><div class="st">How</div><div class="sc">${s.tech}</div></section>
       <section><div class="st">Prerequisites</div><div class="sc">${s.prereq}</div></section>
     </div>
+    ${toolSection(s)}
     <section><div class="st">Expected impact</div><div class="sc">${s.impact}</div></section>
     <section><div class="st">Skills shift</div><div class="sc">${s.skill}</div></section>
     ${ctrl}`;

@@ -56,7 +56,7 @@
   .showing{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
   /* table */
   .tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
-  table{width:100%;border-collapse:collapse;background:#fff;min-width:720px}
+  table{width:100%;border-collapse:collapse;background:#fff;min-width:860px}
   th,td{text-align:left;padding:11px 14px;font-size:13.5px;border-bottom:1px solid var(--border);vertical-align:top}
   th{background:#f8fafc;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
     font-weight:600;position:sticky;top:0}
@@ -67,6 +67,11 @@
   .ap-fill{height:100%;border-radius:4px}
   .ap-num{font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--muted);width:34px;text-align:right}
   .skill{color:var(--muted);font-size:13px;max-width:280px}
+  .toollink{display:inline-flex;align-items:center;gap:3px;font-size:12.5px;font-weight:500;
+    color:var(--navy);text-decoration:none;border-bottom:1px dotted #b7c4d2;white-space:nowrap}
+  .toollink:hover{color:var(--rpa);border-bottom-color:var(--rpa)}
+  .toollink .ext{font-size:10px;opacity:.7}
+  .tool-none{font-size:12.5px;color:var(--muted);font-style:italic}
   /* skills panel */
   .skills-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
   .skill-card{padding:18px 18px 8px}
@@ -122,12 +127,13 @@
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th style="width:20%">Process</th>
-          <th style="width:26%">Task</th>
-          <th style="width:12%">Role</th>
-          <th style="width:15%">Target workforce</th>
-          <th style="width:13%">Automation potential</th>
-          <th style="width:14%">Skills shift</th>
+          <th style="width:17%">Process</th>
+          <th style="width:22%">Task</th>
+          <th style="width:10%">Role</th>
+          <th style="width:14%">Target workforce</th>
+          <th style="width:12%">Automation potential</th>
+          <th style="width:13%">Enabling tool</th>
+          <th style="width:12%">Skills shift</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -251,6 +257,43 @@ const TASKS = [
   {process:P4,task:"Schedule additional trainings",role:"Team Lead",wf:"augmented",ap:74,skill:"Build AI-assisted scheduling"}
 ];
 
+// ---- enabling-tool catalog (real off-the-shelf vendors) ----
+const TOOLS = {
+  powerAutomate:{name:"Microsoft Power Automate", url:"https://www.microsoft.com/power-platform/products/power-automate"},
+  uipath:{name:"UiPath", url:"https://www.uipath.com"},
+  zapier:{name:"Zapier", url:"https://zapier.com"},
+  make:{name:"Make", url:"https://www.make.com"},
+  n8n:{name:"n8n", url:"https://n8n.io"},
+  claude:{name:"Claude (Anthropic)", url:"https://claude.ai"},
+  claudeSdk:{name:"Claude Agent SDK", url:"https://www.anthropic.com/claude"},
+  copilotStudio:{name:"Microsoft Copilot Studio", url:"https://www.microsoft.com/microsoft-copilot/microsoft-copilot-studio"},
+  m365copilot:{name:"Microsoft 365 Copilot", url:"https://www.microsoft.com/microsoft-365/copilot"},
+  docusign:{name:"DocuSign", url:"https://www.docusign.com"},
+  acrobatSign:{name:"Adobe Acrobat Sign", url:"https://www.adobe.com/sign"},
+  deepl:{name:"DeepL", url:"https://www.deepl.com"},
+  calendly:{name:"Calendly", url:"https://calendly.com"}
+};
+
+// Suggest the primary off-the-shelf tool that could do a task.
+// Keyword rules on task+skill text first, then fall back to workforce.
+function suggestTool(task){
+  // Human-led tasks stay human — no tool, regardless of keywords.
+  if(task.wf==="human") return null;
+  const t = ((task.task||"") + " " + (task.skill||"")).toLowerCase();
+  if(/\bcontract signing\b|\bsign\b|\bsigned\b|e-?sign/.test(t)) return TOOLS.docusign;
+  if(/translat/.test(t)) return TOOLS.deepl;
+  if(/\bdraft\b|\bwrite\b|generate text|vacancy text|document generation|one-?pager|\bletter\b/.test(t)) return TOOLS.claude;
+  if(/schedul|\bcalendar\b|\bbooking\b|plan training|intake meeting/.test(t)) return TOOLS.powerAutomate;
+  switch(task.wf){
+    case "genai": return TOOLS.claude;
+    case "agentic": return TOOLS.claudeSdk;
+    case "rpa": return TOOLS.powerAutomate;
+    case "augmented": return TOOLS.m365copilot;
+    case "human": return null;
+    default: return null;
+  }
+}
+
 // ---- computed KPIs ----
 const N = TASKS.length;
 const processes = [...new Set(TASKS.map(t=>t.process))];
@@ -318,6 +361,9 @@ function renderTable(){
         <div class="ap-track"><div class="ap-fill" style="width:${t.ap}%;background:${apColor(t.ap)}"></div></div>
         <span class="ap-num">${t.ap}%</span>
       </div></td>
+      <td>${(()=>{const tool=suggestTool(t);return tool
+        ? `<a class="toollink" href="${tool.url}" target="_blank" rel="noopener noreferrer">${tool.name}<span class="ext">↗</span></a>`
+        : `<span class="tool-none">Human judgement — no tool</span>`;})()}</td>
       <td class="skill">${t.skill}</td>
     </tr>`).join("");
 }
