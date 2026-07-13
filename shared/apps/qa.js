@@ -13,7 +13,7 @@ export function render(mount, ctx) {
     el("p", { class: "psub" }, "Compare the expected version with what actually happened and close the control gap."),
     el("div", { class: "field" }, el("label", {}, srcInput.label), src),
     el("div", { class: "field" }, el("label", {}, actInput.label), act),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "qmodel" })));
+    el("div", { class: "row" }, runBtn));
 
   const banner = el("div", {});
   const stats = el("div", { class: "stats" });
@@ -49,7 +49,6 @@ export function render(mount, ctx) {
       stats.append(
         el("div", { class: "stat" }, el("div", { class: "n", style: { color: "#16a34a" } }, oks), el("div", { class: "l" }, "Matches")),
         el("div", { class: "stat" }, el("div", { class: "n", style: { color: "#991b1b" } }, issues), el("div", { class: "l" }, "Issues")));
-      document.getElementById("qmodel").textContent = "model: " + d.model;
     } catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = tool.run || "Run check"; }
   }
   runBtn.onclick = run;

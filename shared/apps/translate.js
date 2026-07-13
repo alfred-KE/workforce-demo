@@ -24,7 +24,7 @@ export function render(mount, ctx) {
     el("div", { class: "field" }, el("label", {}, textInput.label), src),
     el("div", { class: "field" }, el("label", {}, "Glossary (optional)"), glossary),
     el("div", { class: "field" }, el("label", {}, "Target languages"), chips),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "tmodel" })));
+    el("div", { class: "row" }, runBtn));
 
   const grid = el("div", { class: "cardgrid" });
   const right = el("div", { class: "pane" },
@@ -55,7 +55,6 @@ export function render(mount, ctx) {
         card.innerHTML = "";
         card.append(el("h5", {}, L, el("button", { class: "btn small", onClick: () => copyText(d.output) }, "Copy")),
           el("div", { style: { fontSize: "13px", whiteSpace: "pre-wrap" } }, d.output));
-        document.getElementById("tmodel").textContent = "model: " + d.model;
       } catch (e) {
         card.innerHTML = ""; card.append(el("h5", {}, L), el("div", { class: "errbox" }, e.message));
       }

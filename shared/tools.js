@@ -8,7 +8,7 @@ export const KINDS = {
     label: "Draft generator",
     blurb: "Generates a ready-to-use draft from a short brief.",
     run: "Generate draft",
-    model: "gpt-4o-mini", maxTokens: 750,
+    maxTokens:750,
     system: "You are an HR operations copilot for a fictitious value retailer called Northwind Retail. Produce a clean, professional, ready-to-use draft in UK English. Be concise and concrete. Never invent real policy numbers, personal data, or legal clauses; keep it illustrative.",
     inputs: [{ id: "brief", label: "Brief / key points", type: "textarea" }],
   },
@@ -16,7 +16,7 @@ export const KINDS = {
     label: "Editing copilot",
     blurb: "Merges reviewer feedback into a draft and flags what changed.",
     run: "Apply feedback",
-    model: "gpt-4o-mini", maxTokens: 750,
+    maxTokens:750,
     system: "You are an editing copilot for Northwind Retail HR. Revise the draft to incorporate the reviewer feedback faithfully. Return the revised text, then a one-line '> Changes:' note summarising what you changed.",
     inputs: [
       { id: "draft", label: "Current draft", type: "textarea" },
@@ -27,7 +27,7 @@ export const KINDS = {
     label: "Translation service",
     blurb: "Translates HR content into the target language, keeping terminology consistent.",
     run: "Translate",
-    model: "gpt-4o-mini", maxTokens: 750,
+    maxTokens:750,
     system: "You are a professional HR translator for Northwind Retail. Translate the source text faithfully into the requested target language, keeping HR terminology and tone consistent. Return only the translation.",
     inputs: [
       { id: "text", label: "Source text", type: "textarea" },
@@ -38,7 +38,7 @@ export const KINDS = {
     label: "Data extractor",
     blurb: "Pulls structured fields from messy input and flags what's missing.",
     run: "Extract",
-    model: "gpt-4o-mini", maxTokens: 650,
+    maxTokens:650,
     system: "You are a data-extraction agent for Northwind Retail HR. Read the raw input and return a compact Markdown table of the relevant fields and values. Add a short 'Flags' line listing anything missing, inconsistent or requiring human review.",
     inputs: [{ id: "raw", label: "Raw input", type: "textarea" }],
   },
@@ -46,7 +46,7 @@ export const KINDS = {
     label: "Decision agent",
     blurb: "Makes a routing / eligibility / match decision with a justification.",
     run: "Decide",
-    model: "gpt-4o-mini", maxTokens: 450,
+    maxTokens:450,
     system: "You are a decision agent for Northwind Retail HR. Based on the inputs, make the decision the step requires (e.g. duplicate vs new, eligible vs not, which route/recipient). Reply in exactly three lines: 'Decision: ...', 'Reason: ...', 'Next action: ...'.",
     inputs: [{ id: "record", label: "Record / data to assess", type: "textarea" }],
   },
@@ -54,7 +54,7 @@ export const KINDS = {
     label: "QA / control agent",
     blurb: "Compares expected vs actual and closes the control gap with a checklist.",
     run: "Run check",
-    model: "gpt-4o-mini", maxTokens: 650,
+    maxTokens:650,
     system: "You are a quality-control agent for Northwind Retail HR. Compare the SOURCE/expected version against the ACTUAL/published version. Return a checklist using ✓ for matches and ✗ for issues (one line each), then a final line 'Result: PASS' or 'Result: FAIL — <reason>'.",
     inputs: [
       { id: "source", label: "Source / expected", type: "textarea" },
@@ -65,7 +65,7 @@ export const KINDS = {
     label: "Scheduling agent",
     blurb: "Turns constraints into a concrete plan with dates, slots and owners.",
     run: "Build plan",
-    model: "gpt-4o-mini", maxTokens: 650,
+    maxTokens:650,
     system: "You are a scheduling agent for Northwind Retail HR. From the constraints and participants, propose a concrete plan: a short ordered list with dates/day-slots, who does what, and any dependency. Keep it realistic and immediately usable.",
     inputs: [{ id: "constraints", label: "Constraints & participants", type: "textarea" }],
   },
@@ -73,7 +73,7 @@ export const KINDS = {
     label: "Notification drafter",
     blurb: "Writes the right message to the right recipients.",
     run: "Draft message",
-    model: "gpt-4o-mini", maxTokens: 500,
+    maxTokens:500,
     system: "You are a communications copilot for Northwind Retail HR. Write a short, clear internal message to the stated recipients. Return 'Subject: ...' then the body. Professional, friendly, no fluff.",
     inputs: [
       { id: "context", label: "What to communicate", type: "textarea" },
@@ -84,7 +84,7 @@ export const KINDS = {
     label: "Autonomous agent",
     blurb: "Plans and 'executes' a multi-step task across systems, with an action log.",
     run: "Run agent",
-    model: "gpt-4o-mini", maxTokens: 650,
+    maxTokens:650,
     system: "You are an autonomous operations agent for Northwind Retail HR. For the given task, output a realistic numbered action log of the steps you execute across the (generic) systems involved, validating mandatory data as you go. End with a final line 'Status: <result>'. Keep it specific and grounded in the inputs.",
     inputs: [{ id: "task", label: "Task context & data", type: "textarea" }],
   },
@@ -92,7 +92,7 @@ export const KINDS = {
     label: "RPA bot",
     blurb: "Applies a deterministic rule and returns the run log + result.",
     run: "Run bot",
-    model: "gpt-4o-mini", maxTokens: 500,
+    maxTokens:500,
     system: "You are an RPA automation for Northwind Retail HR. Given the trigger and data, output three sections: 'Rule applied:', 'Actions:' (a short numbered log), and 'Result:'. Deterministic, no judgement calls.",
     inputs: [{ id: "trigger", label: "Trigger & data", type: "textarea" }],
   },
@@ -204,7 +204,7 @@ export function deriveTool(s) {
   const gd = genericDemo(kind, s); // guarantees a sensible demo for every input id
   return {
     id: s.id, kind, title: s.name, kindLabel: k.label, blurb: k.blurb, run: k.run,
-    model: k.model, maxTokens: k.maxTokens,
+    maxTokens: k.maxTokens,
     inputs: k.inputs.map((inp) => ({
       ...inp,
       demo: bespoke[inp.id] != null && bespoke[inp.id] !== "" ? bespoke[inp.id] : (gd[inp.id] || ""),
@@ -244,7 +244,6 @@ export function buildMessages(id, inputs, extra) {
     lines.push("", "Additional instruction: " + String(extra).slice(0, 1200));
   }
   return {
-    model: t.model,
     max_tokens: t.maxTokens,
     messages: [
       { role: "system", content: k.system },

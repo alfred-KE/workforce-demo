@@ -14,7 +14,7 @@ export function render(mount, ctx) {
     el("p", { class: "psub" }, "Fold reviewer feedback into the draft and see exactly what changed."),
     el("div", { class: "field" }, el("label", {}, draftInput.label), draft),
     el("div", { class: "field" }, el("label", {}, fbInput.label), fb),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "rmodel" })));
+    el("div", { class: "row" }, runBtn));
 
   let showOriginal = false, revised = "";
   const changesNote = el("div", { class: "muted", style: { marginBottom: "10px", fontSize: "12.5px" } });
@@ -41,7 +41,6 @@ export function render(mount, ctx) {
       document.getElementById("rempty").style.display = "none";
       body.style.display = "block"; body.value = revised;
       changesNote.innerHTML = note ? "<b>What changed:</b> " + note : "";
-      document.getElementById("rmodel").textContent = "model: " + d.model;
     } catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = tool.run || "Apply feedback"; }
   }
   runBtn.onclick = run;

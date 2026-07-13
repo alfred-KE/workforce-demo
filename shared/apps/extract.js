@@ -10,7 +10,7 @@ export function render(mount, ctx) {
     el("h3", {}, "Data Console"),
     el("p", { class: "psub" }, "Extract structured fields from raw text into a table you can edit and export."),
     el("div", { class: "field" }, el("label", {}, rawInput.label), raw),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "emodel" })));
+    el("div", { class: "row" }, runBtn));
 
   const tableWrap = el("div", {});
   const flags = el("div", { class: "muted", style: { marginTop: "10px", fontSize: "12.5px" } });
@@ -48,7 +48,6 @@ export function render(mount, ctx) {
       const t = parseTable(d.output);
       if (t) { buildTable(t.head, t.rows); const rest = d.output.split("\n").filter((l) => /flag/i.test(l)).join(" "); flags.innerHTML = rest ? "<b>Flags:</b> " + rest.replace(/.*flags?:?/i, "") : ""; }
       else { empty.style.display = "none"; tableWrap.innerHTML = '<div class="out-body">' + mdToHtml(d.output) + "</div>"; head = []; }
-      document.getElementById("emodel").textContent = "model: " + d.model;
     } catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = tool.run || "Extract"; }
   }
   runBtn.onclick = run;

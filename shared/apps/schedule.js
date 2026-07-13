@@ -15,7 +15,7 @@ export function render(mount, ctx) {
     el("div", { class: "row" },
       el("div", { class: "field", style: { flex: "1" } }, el("label", {}, "Start date"), startEl),
       el("div", { class: "field", style: { width: "110px" } }, el("label", {}, "# sessions"), sessEl)),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "smodel" })));
+    el("div", { class: "row" }, runBtn));
 
   const grid = el("div", {});
   const planBody = el("div", { class: "out-body" });
@@ -46,7 +46,6 @@ export function render(mount, ctx) {
       grid.append(weekView(d.output));
       const t = parseTable(d.output);
       planBody.innerHTML = t ? mdToHtml(d.output) : mdToHtml(d.output);
-      document.getElementById("smodel").textContent = "model: " + d.model;
     } catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = tool.run || "Build plan"; }
   }
   runBtn.onclick = run;

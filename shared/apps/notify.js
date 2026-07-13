@@ -22,7 +22,7 @@ export function render(mount, ctx) {
     el("div", { class: "field" }, el("label", {}, recInput ? recInput.label : "Recipients"), recEl),
     chipRow("Tone", ["Neutral", "Friendly", "Formal"], "tone"),
     chipRow("Channel", ["Email", "Chat"], "channel"),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "nmodel" })));
+    el("div", { class: "row" }, runBtn));
 
   const subj = el("input", { type: "text", placeholder: "Subject" });
   const bodyEl = el("textarea", { class: "editable", style: { minHeight: "230px" } });
@@ -50,7 +50,6 @@ export function render(mount, ctx) {
       let out = d.output; const m = out.match(/subject:\s*(.*)/i);
       subj.value = m ? m[1].trim() : ""; if (m) out = out.replace(m[0], "").trim();
       empty.style.display = "none"; subjRow.style.display = "block"; bodyEl.style.display = "block"; bodyEl.value = out;
-      document.getElementById("nmodel").textContent = "model: " + d.model;
     } catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = tool.run || "Draft message"; }
   }
   runBtn.onclick = run;

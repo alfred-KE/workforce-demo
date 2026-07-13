@@ -20,15 +20,22 @@ export function el(tag, attrs, ...kids) {
   return e;
 }
 
-// call our serverless AI endpoint; returns {output, model} or throws Error(message)
+// call our serverless AI endpoint; returns {output} or throws Error(message)
 export async function callTool(id, inputs, extra) {
-  const r = await fetch("/api/tool", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, inputs, extra }),
-  });
-  const d = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(d.error || "HTTP " + r.status);
-  return d;
+  let ok = false;
+  try {
+    const r = await fetch("/api/tool", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, inputs, extra }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || "The tool couldn't run just now.");
+    ok = true;
+    return d;
+  } finally {
+    // let embedders (e.g. the showcase auto-player) know a run finished
+    try { window.dispatchEvent(new CustomEvent("tool:result", { detail: { ok } })); } catch (_) {}
+  }
 }
 
 export function copyText(t) {

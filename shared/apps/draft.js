@@ -32,7 +32,6 @@ export function render(mount, ctx) {
 
   const ta = el("textarea", { class: "editable", style: { minHeight: "340px" } });
   const wc = el("span", { class: "muted" }, "0 words");
-  const model = el("span", { class: "muted" }, "");
   const updateWc = () => { const n = ta.value.trim() ? ta.value.trim().split(/\s+/).length : 0; wc.textContent = n + " words"; };
   ta.addEventListener("input", updateWc);
   const bar = el("div", { class: "toolbar" },
@@ -42,7 +41,7 @@ export function render(mount, ctx) {
     el("button", { class: "btn small", onClick: () => tweak("Make it about 30% shorter, keep the essentials.") }, "Shorter"),
     el("button", { class: "btn small", onClick: () => tweak("Expand it by ~30% with more concrete detail.") }, "Longer"),
     el("button", { class: "btn small", onClick: () => tweak("Make the tone noticeably more formal.") }, "More formal"),
-    el("span", { class: "grow" }), model);
+    el("span", { class: "grow" }));
   const variants = el("div", {});
   const right = el("div", { class: "pane" },
     el("div", { class: "row" }, el("h3", { style: { margin: 0 } }, "Draft"), el("span", { class: "grow" }), wc),
@@ -53,7 +52,7 @@ export function render(mount, ctx) {
 
   async function gen() {
     genBtn.disabled = true; genBtn.innerHTML = spinner() + " Generating…"; variants.innerHTML = "";
-    try { const d = await callTool(tool.id, inputs(), extra()); ta.value = d.output; updateWc(); model.textContent = "model: " + d.model; }
+    try { const d = await callTool(tool.id, inputs(), extra()); ta.value = d.output; updateWc(); }
     catch (e) { toast(e.message); } finally { genBtn.disabled = false; genBtn.textContent = tool.run; }
   }
   async function tweak(instr) {

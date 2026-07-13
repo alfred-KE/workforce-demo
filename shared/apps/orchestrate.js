@@ -10,7 +10,7 @@ export function render(mount, ctx) {
     el("h3", {}, "Agent Runner"),
     el("p", { class: "psub" }, "Give the agent a task; watch it plan and execute the steps across systems."),
     el("div", { class: "field" }, el("label", {}, taskInput.label), task),
-    el("div", { class: "row" }, runBtn, el("span", { class: "muted", id: "omodel" })));
+    el("div", { class: "row" }, runBtn));
 
   const stats = el("div", { class: "stats" });
   const console = el("div", { class: "console" });
@@ -39,7 +39,6 @@ export function render(mount, ctx) {
       setTimeout(() => {
         if (statusLine) status.append(el("div", { class: "statusbar" }, "✓ " + statusLine));
       }, 120 * list.length + 120);
-      document.getElementById("omodel").textContent = "model: " + d.model;
     } catch (e) { toast(e.message); } finally { runBtn.disabled = false; runBtn.textContent = tool.run || "Run agent"; }
   }
   runBtn.onclick = run;
