@@ -60,10 +60,11 @@
     letter-spacing:.04em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
   svg.conn{position:absolute;left:0;top:0;pointer-events:none}
   .node{position:absolute;background:var(--bpmn);border:1.5px solid var(--bpmnb);border-radius:9px;
-    padding:8px 9px;cursor:pointer;transition:.18s;box-shadow:0 1px 2px rgba(10,37,64,.06);z-index:3}
-  .node:hover{box-shadow:0 4px 14px rgba(10,37,64,.16);transform:translateY(-1px)}
-  .node .nn{font-size:11px;font-weight:700;line-height:1.25;color:var(--ink)}
-  .node .nsys{font-size:9.5px;color:var(--muted);margin-top:4px;font-weight:600}
+    padding:9px 11px;cursor:pointer;transition:.18s;box-shadow:0 1px 2px rgba(10,37,64,.06);z-index:3;
+    display:flex;flex-direction:column;justify-content:center;overflow-wrap:anywhere;word-break:normal}
+  .node:hover{box-shadow:0 4px 14px rgba(10,37,64,.16);transform:translateY(-1px);z-index:5}
+  .node .nn{font-size:11px;font-weight:700;line-height:1.28;color:var(--ink)}
+  .node .nsys{font-size:9.5px;color:var(--muted);margin-top:4px;font-weight:600;overflow-wrap:anywhere}
   .node .corner{position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;
     display:none;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;z-index:4}
   .node .apbadge{position:absolute;bottom:-9px;left:8px;font-size:9.5px;font-weight:800;color:#fff;
@@ -211,7 +212,7 @@ const wfLabel = (k) => (WF[k]&&WF[k].label)||k;
 
 let proc = "req", mode = "current", sel = null;
 
-const labelW=30, colW=178, nodeW=142, nodeH=60, laneH=110, topPad=10, startGap=72;
+const labelW=30, colW=196, nodeW=162, nodeH=66, laneH=132, topPad=10, startGap=74;
 const col0X=labelW+18+startGap;
 const nodeX=(c)=>col0X+c*colW;
 const nodeY=(l)=>topPad+l*laneH+(laneH-nodeH)/2;
@@ -242,7 +243,7 @@ function build(){
   const lanes=PROCS[proc].lanes, steps=procSteps(proc);
   const maxCol=Math.max(...steps.map(s=>s.col));
   const ex=nodeX(maxCol)+nodeW+40;
-  const totalW=ex+152, totalH=topPad+lanes.length*laneH+4;
+  const totalW=ex+160, totalH=topPad+lanes.length*laneH+22;
   const cv=document.getElementById("canvas");
   cv.innerHTML=""; cv.style.width=totalW+"px"; cv.style.height=totalH+"px";
 
